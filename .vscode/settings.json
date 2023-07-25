@@ -1,5 +1,18 @@
 {
     "cSpell.words": [
-        "Pydantic"
+        "Pydantic",
+        "yalemi"
+    ],
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "Yalemi Dev",
+            "group": "Yalemi Project",
+            "database": "yalemi-dev",
+            "username": "adcon"
+        }
     ]
 }
