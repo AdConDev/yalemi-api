@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
+        "adcon",
+        "mayz",
+        "psycopg",
         "Pydantic",
         "yalemi"
     ],
@@ -9,9 +12,9 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "Yalemi Dev",
+            "name": "Yalemi",
             "group": "Yalemi Project",
-            "database": "yalemi-dev",
+            "database": "Yalemi Dev",
             "username": "adcon"
         }
     ]
