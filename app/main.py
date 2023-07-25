@@ -10,11 +10,9 @@ posts_db = []
 
 class Post(BaseModel):
     ''' Defining the New Post schema '''
-    id: int = 0
     title: str
     content: str
     published: bool = True
-    rating: int = 0
 
 
 def find_id_index(db_posts: list, id_post: int):
