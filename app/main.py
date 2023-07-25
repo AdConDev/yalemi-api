@@ -1,11 +1,32 @@
 ''' Crating a simple API with FastAPI '''
 
 from random import randrange
+import time
 from fastapi import FastAPI, status, HTTPException, Response
 from pydantic import BaseModel
+import psycopg
 
 app = FastAPI()
 posts_db = []
+
+while True:
+    try:
+        print("---- CONNECTION TRY ----")
+        CONN = psycopg.connect(
+            host="localhost",
+            user="adcon",
+            password="231014",
+            dbname='Yalemi Dev'
+        )
+        cursor = CONN.cursor()
+    except psycopg.Error as error:
+        print("Error:", str(error))
+        print("---- TRYING TO RECONNECT ----")
+    else:
+        print("---- CONNECTED TO DATABASE ----")
+        break
+    finally:
+        time.sleep(1)
 
 
 class Post(BaseModel):
