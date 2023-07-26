@@ -4,6 +4,7 @@
         "mayz",
         "psycopg",
         "Pydantic",
+        "sqlmodel",
         "yalemi"
     ],
     "sqltools.connections": [

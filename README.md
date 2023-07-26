@@ -27,7 +27,7 @@ An API (Application Programming Interface) is a set of functions that allows app
 
 #### FastAPI
 
-[FastAPI](https://github.com/tiangolo/fastapi) is a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.
+[FastAPI](https://fastapi.tiangolo.com/) is a modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.
 
 ##### Pydantic
 
@@ -63,3 +63,11 @@ A ***Database Management System (DBMS)*** is software that allows you to define,
 ##### pgAdmin
 
 With ***pgAdmin***, you get a ***graphical interface*** where you can configure multiple aspects of your ***PostgreSQL server*** and databases, and use a SQL query tool for writing, running, and saving queries.
+
+## Object Relational Mapping (ORM)
+
+An ***Object Relational Mapping (ORM)*** is a technique that lets you query and manipulate data from a database using an object-oriented paradigm. When talking about ORM, most people are referring to a library that implements the Object-Relational Mapping technique, hence the phrase "an ORM".
+
+### SQLModel
+
+[SQLModel](https://sqlmodel.tiangolo.com/) is a library for interacting with SQL databases from Python code, with Python objects. It is designed to be intuitive, easy to use, highly compatible, and robust. It is based on the [Pydantic](https://pydantic-docs.helpmanual.io/) data validation library, and [SQLAlchemy](https://www.sqlalchemy.org/) core. Creators of SQLModel are the same as [FastAPI](https://fastapi.tiangolo.com/)
