@@ -1,24 +1,24 @@
-''' Crating a simple API with FastAPI '''
+''' Crating a Social Media API with FastAPI '''
 
-from random import randrange
 import time
-from fastapi import FastAPI, status, HTTPException, Response
+from fastapi import FastAPI, status, HTTPException
 from pydantic import BaseModel
 import psycopg
+from psycopg.rows import dict_row
 
 app = FastAPI()
-posts_db = []
+mayz_db = []
 
 while True:
+    print("---- CONNECTION TRY ----")
     try:
-        print("---- CONNECTION TRY ----")
         CONN = psycopg.connect(
             host="localhost",
             user="adcon",
             password="231014",
-            dbname='Yalemi Dev'
+            dbname='Yalemi Dev',
+            row_factory=dict_row
         )
-        cursor = CONN.cursor()
     except psycopg.Error as error:
         print("Error:", str(error))
         print("---- TRYING TO RECONNECT ----")
@@ -29,17 +29,17 @@ while True:
         time.sleep(1)
 
 
-class Post(BaseModel):
-    ''' Defining the New Post schema '''
+class May(BaseModel):
+    ''' Defining the New may schema '''
     title: str
     content: str
     published: bool = True
 
 
-def find_id_index(db_posts: list, id_post: int):
-    ''' Find the index of the post with the id in URL '''
-    for index, post in enumerate(db_posts):
-        if post["id"] == id_post:
+def find_id_index(db_mayz: list, id_post: int):
+    ''' Find the index of the may with the id in URL '''
+    for index, may in enumerate(db_mayz):
+        if may["id"] == id_post:
             return index
     return None
 
@@ -47,77 +47,139 @@ def find_id_index(db_posts: list, id_post: int):
 @app.get("/")
 def read_hello_world():
     ''' Hello World! '''
-    return {"detail": "Hello World!"}
+    try:
+        hello_pg = CONN.execute(""" SELECT version(); """).fetchone()
+    except psycopg.OperationalError as hello_error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database Error"
+        ) from hello_error
+    if hello_pg is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=""
+        )
+    hello_pg['detail'] = 'Hello World!'
+    return hello_pg
 
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create(post: Post):
-    ''' Create a post '''
-    new_post = post.model_dump()
-    new_post["id"] = randrange(10000)
-    if post.published:
-        posts_db.append(new_post)
-        return {"posts": new_post, "detail": "Post published"}
-    return {"posts": new_post, "detail": "Post not published"}
+@app.post("/mayz", status_code=status.HTTP_201_CREATED)
+def create(may: May):
+    ''' Create a may '''
+    try:
+        new_post = CONN.execute(
+            """ INSERT INTO mayz (title, content, published)
+                VALUES (%s, %s, %s)
+                RETURNING *; """,
+            (may.title, may.content, may.published)).fetchone()
+    except psycopg.OperationalError as create_error:
+        CONN.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Invalid data schema"
+        ) from create_error
+    CONN.commit()
+    return {"data": new_post}
 
 
-@app.get("/posts")
+@app.get("/mayz", status_code=status.HTTP_200_OK)
 def read_all():
-    ''' Get all posts '''
-    if posts_db:
-        return {"posts": posts_db}
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="No posts found"
+    ''' Get all mayz '''
+    try:
+        mayz = CONN.execute(""" SELECT * FROM mayz; """).fetchall()
+    except psycopg.OperationalError as read_all_error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No mayz found"
+        ) from read_all_error
+    if mayz is None:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="No mayz found"
         )
+    return {'data': mayz}
 
 
-@app.get("/posts/latest")
+@app.get("/mayz/latest")
 def read_latest():
-    ''' Get latest post '''
-    if posts_db:
-        return {"posts": posts_db[-1]}
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="No posts found"
+    ''' Get latest may '''
+    try:
+        latest_may = CONN.execute(
+            """ SELECT * FROM mayz
+                ORDER BY created_at
+                DESC LIMIT 1; """).fetchone()
+    except psycopg.OperationalError as read_latest_error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No latest may found"
+        ) from read_latest_error
+    if latest_may is None:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="No mayz found"
         )
+    return {'data': latest_may}
 
 
-@app.get("/posts/{id_post}")
+@app.get("/mayz/{id_post}")
 def read_one(id_post: int):
-    ''' Get specific post '''
-    index = find_id_index(posts_db, id_post)
-    if index is None:
+    ''' Get specific may '''
+    try:
+        chosen_may = CONN.execute(
+            """ SELECT * FROM mayz
+                WHERE id_may = %s; """,
+            (id_post,)).fetchone()
+    except psycopg.OperationalError as read_chosen_error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database Error"
+        ) from read_chosen_error
+    if chosen_may is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No posts with this id {id_post}"
-            )
-    return {"posts": posts_db[index]}
+            detail="No mayz found"
+        )
+    return {'data': chosen_may}
 
 
-@app.put("/posts/{id_post}", status_code=status.HTTP_202_ACCEPTED)
-def update(id_post: int, post: Post):
-    ''' Update specific post '''
-    index = find_id_index(posts_db, id_post)
-    if index is None:
+@app.put("/mayz/{id_post}", status_code=status.HTTP_202_ACCEPTED)
+def update(id_post: int, may: May):
+    ''' Update specific may '''
+    try:
+        updated_may = CONN.execute(
+            """ UPDATE mayz SET title = %s, content = %s, published = %s
+            WHERE id_may = %s
+            RETURNING *; """,
+            (may.title, may.content, may.published, id_post)).fetchone()
+    except psycopg.OperationalError as update_error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database Error"
+        ) from update_error
+    if updated_may is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No posts with this id {id_post}"
+            detail=f"No mayz with this id {id_post}"
             )
-    edited_post = post.model_dump()
-    edited_post["id"] = id_post
-    posts_db[index] = edited_post
-    return {"posts": posts_db[index]}
+    return {"data": updated_may}
 
 
-@app.delete("/posts/{id_post}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/mayz/{id_post}", status_code=status.HTTP_204_NO_CONTENT)
 def delete(id_post: int):
-    ''' Delete specific post '''
-    index = find_id_index(posts_db, id_post)
-    if index is None:
+    ''' Delete specific may '''
+    try:
+        deleted_may = CONN.execute(
+            """ DELETE FROM mayz WHERE id_may = %s RETURNING *; """,
+            (id_post,)).fetchone()
+        CONN.commit()
+        if deleted_may is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No mayz with this id {id_post}"
+                )
+    except psycopg.OperationalError as delete_error:
+        CONN.rollback()
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No posts with this id {id_post}"
-            )
-    posts_db.pop(index)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database Error"
+        ) from delete_error
