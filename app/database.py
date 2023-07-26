@@ -1,18 +1,44 @@
 ''' Database connection and setup using SQLModel '''
 
-from sqlmodel import create_engine
-from models import SQLModel
+from sqlmodel import create_engine, Session
+
+try:
+    from . import models
+except ImportError:
+    import models
 
 
-def create_db_and_tables():
+def create_tables(eng):
     ''' Create database and tables '''
-    engine = create_engine(POSTGRES_URL, echo=True)
-    SQLModel.metadata.create_all(engine)
+    models.SQLModel.metadata.create_all(eng)
+
+
+def create_mayz(eng):
+    ''' Add mockup rows to Mayz table '''
+    may_1 = models.May(
+        title="May 1st",
+        content="May the 1st be with you"
+        )
+    may_2 = models.May(
+        title="May 2nd",
+        content="May the 2nd be with you",
+        published=False
+        )
+    may_3 = models.May(
+        title="May 3rd",
+        content="May the 3rd be with you"
+        )
+    with Session(eng) as session:
+        session.add(may_1)
+        session.add(may_2)
+        session.add(may_3)
+        session.commit()
 
 
 POSTGRES_FILE = "yalemi-dev"
 POSTGRES_URL = f"postgresql://adcon:231014@localhost/{POSTGRES_FILE}"
 
-
 if __name__ == "__main__":
-    create_db_and_tables()
+    engine = create_engine(POSTGRES_URL, echo=True)
+    create_tables(engine)
+    create_mayz(engine)

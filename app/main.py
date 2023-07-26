@@ -5,12 +5,11 @@ from fastapi import FastAPI, status, HTTPException
 import psycopg
 from psycopg.rows import dict_row
 from sqlmodel import create_engine
-from . import models
+from . import database
 from . import schemas
 
-POSTGRES_FILE = "yalemi-dev"
-POSTGRES_URL = f"postgresql://adcon:231014@localhost/{POSTGRES_FILE}"
-engine = create_engine(POSTGRES_URL, echo=True)
+engine = create_engine(database.POSTGRES_URL, echo=True)
+database.create_tables(engine)
 app = FastAPI()
 mayz_db = []
 

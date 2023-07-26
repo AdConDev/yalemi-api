@@ -1,6 +1,7 @@
 ''' Table Model configuration with SQLModel '''
 
-from sqlmodel import Field, SQLModel
+from datetime import datetime
+from sqlmodel import Field, SQLModel, DateTime, Column
 
 
 class May(SQLModel, table=True):
@@ -8,5 +9,6 @@ class May(SQLModel, table=True):
     id_may: int | None = Field(default=None, primary_key=True)
     title: str = Field(max_length=30)
     content: str = Field(max_length=120)
-    published: bool = Field(default=True)
-    created_at: str = Field(max_length=25)
+    published: bool = Field(default=True, nullable=False)
+    created_at: datetime = Field(sa_column=Column(
+        DateTime(timezone=True), nullable=False), default=datetime.utcnow())

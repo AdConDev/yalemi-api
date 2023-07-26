@@ -7,4 +7,4 @@ class May(BaseModel):
     ''' Defining the May schema '''
     title: str
     content: str
-    published: bool | None = True
+    published: bool = True
