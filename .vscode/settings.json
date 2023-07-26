@@ -13,9 +13,9 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "Yalemi",
+            "name": "Yalemi Dev",
             "group": "Yalemi Project",
-            "database": "Yalemi Dev",
+            "database": "yalemi-dev",
             "username": "adcon"
         }
     ]
