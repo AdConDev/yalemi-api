@@ -2,12 +2,18 @@
 
 import time
 from fastapi import FastAPI, status, HTTPException
-from pydantic import BaseModel
 import psycopg
 from psycopg.rows import dict_row
+from sqlmodel import create_engine
+from . import models
+from . import schemas
 
+POSTGRES_FILE = "yalemi-dev"
+POSTGRES_URL = f"postgresql://adcon:231014@localhost/{POSTGRES_FILE}"
+engine = create_engine(POSTGRES_URL, echo=True)
 app = FastAPI()
 mayz_db = []
+
 
 while True:
     print("---- CONNECTION TRY ----")
@@ -27,21 +33,6 @@ while True:
         break
     finally:
         time.sleep(1)
-
-
-class May(BaseModel):
-    ''' Defining the New may schema '''
-    title: str
-    content: str
-    published: bool = True
-
-
-def find_id_index(db_mayz: list, id_post: int):
-    ''' Find the index of the may with the id in URL '''
-    for index, may in enumerate(db_mayz):
-        if may["id"] == id_post:
-            return index
-    return None
 
 
 @app.get("/")
@@ -64,7 +55,7 @@ def read_hello_world():
 
 
 @app.post("/mayz", status_code=status.HTTP_201_CREATED)
-def create(may: May):
+def create(may: schemas.May):
     ''' Create a may '''
     try:
         new_post = CONN.execute(
@@ -143,7 +134,7 @@ def read_one(id_post: int):
 
 
 @app.put("/mayz/{id_post}", status_code=status.HTTP_202_ACCEPTED)
-def update(id_post: int, may: May):
+def update(id_post: int, may: schemas.May):
     ''' Update specific may '''
     try:
         updated_may = CONN.execute(
