@@ -1,7 +1,7 @@
 ''' Database connection and setup using SQLModel '''
 
-from sqlmodel import create_engine, SQLModel
-import models
+from sqlmodel import create_engine
+from models import SQLModel
 
 
 def create_db_and_tables():
