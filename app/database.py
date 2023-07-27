@@ -8,12 +8,17 @@ except ImportError:
     import models
 
 
-def create_tables(eng):
+def new_engine():
+    ''' Create database engine '''
+    return create_engine(POSTGRES_URL, echo=True)
+
+
+def create_db(engine):
     ''' Create database and tables '''
-    models.SQLModel.metadata.create_all(eng)
+    models.SQLModel.metadata.create_all(engine)
 
 
-def create_mayz(eng):
+def create_mayz(engine):
     ''' Add mockup rows to Mayz table '''
     may_1 = models.May(
         title="May 1st",
@@ -28,7 +33,7 @@ def create_mayz(eng):
         title="May 3rd",
         content="May the 3rd be with you"
         )
-    with Session(eng) as session:
+    with Session(engine) as session:
         session.add(may_1)
         session.add(may_2)
         session.add(may_3)
@@ -37,8 +42,3 @@ def create_mayz(eng):
 
 POSTGRES_FILE = "yalemi-dev"
 POSTGRES_URL = f"postgresql://adcon:231014@localhost/{POSTGRES_FILE}"
-
-if __name__ == "__main__":
-    engine = create_engine(POSTGRES_URL, echo=True)
-    create_tables(engine)
-    create_mayz(engine)

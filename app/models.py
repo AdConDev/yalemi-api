@@ -10,5 +10,5 @@ class May(SQLModel, table=True):
     title: str = Field(max_length=30)
     content: str = Field(max_length=120)
     published: bool = Field(default=True, nullable=False)
-    created_at: datetime = Field(sa_column=Column(
+    created_at: datetime | None = Field(sa_column=Column(
         DateTime(timezone=True), nullable=False), default=datetime.utcnow())
