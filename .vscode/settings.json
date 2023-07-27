@@ -1,9 +1,13 @@
 {
     "cSpell.words": [
         "adcon",
+        "CTYPE",
         "mayz",
+        "nextval",
+        "pkey",
         "psycopg",
         "Pydantic",
+        "regclass",
         "sqlmodel",
         "yalemi"
     ],
