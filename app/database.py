@@ -1,7 +1,6 @@
 ''' Database connection and setup using SQLModel '''
 
-from sqlmodel import create_engine, Session
-
+from sqlmodel import create_engine, Session, engine
 try:
     from . import models
 except ImportError:
@@ -13,12 +12,12 @@ def new_engine():
     return create_engine(POSTGRES_URL, echo=True)
 
 
-def create_db(engine):
+def create_db(sql_engine: engine):
     ''' Create database and tables '''
-    models.SQLModel.metadata.create_all(engine)
+    models.SQLModel.metadata.create_all(sql_engine)
 
 
-def create_mayz(engine):
+def create_mayz(sql_engine: engine):
     ''' Add mockup rows to Mayz table '''
     may_1 = models.May(
         title="May 1st",
@@ -33,7 +32,7 @@ def create_mayz(engine):
         title="May 3rd",
         content="May the 3rd be with you"
         )
-    with Session(engine) as session:
+    with Session(sql_engine) as session:
         session.add(may_1)
         session.add(may_2)
         session.add(may_3)
