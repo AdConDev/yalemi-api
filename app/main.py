@@ -4,14 +4,20 @@ import time
 from fastapi import FastAPI, status, HTTPException
 import psycopg
 from psycopg.rows import dict_row
-from sqlmodel import create_engine
-from . import database
-from . import schemas
+try:
+    from . import database as db
+    from . import schemas
+    from . import crud
+    from . import models
+except ImportError:
+    import database as db
+    import schemas
+    import crud
+    import models
 
-engine = create_engine(database.POSTGRES_URL, echo=True)
-database.create_tables(engine)
+ENGINE = db.new_engine()
+db.create_db(ENGINE)
 app = FastAPI()
-mayz_db = []
 
 
 while True:
@@ -35,22 +41,16 @@ while True:
 
 
 @app.get("/")
-def read_hello_world():
-    ''' Hello World! '''
+def read_hello_http():
+    ''' Hello World, HTTP! '''
     try:
-        hello_pg = CONN.execute(""" SELECT version(); """).fetchone()
-    except psycopg.OperationalError as hello_error:
+        crud.select_all(ENGINE, models.May)
+    except Exception as hello_error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database Error"
+            detail="HTTP/SQLModel Error"
         ) from hello_error
-    if hello_pg is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=""
-        )
-    hello_pg['detail'] = 'Hello World!'
-    return hello_pg
+    return {'http': 'Hello World!', 'SQLModel': 'Hello World!'}
 
 
 @app.post("/mayz", status_code=status.HTTP_201_CREATED)
@@ -76,60 +76,54 @@ def create(may: schemas.May):
 def read_all():
     ''' Get all mayz '''
     try:
-        mayz = CONN.execute(""" SELECT * FROM mayz; """).fetchall()
-    except psycopg.OperationalError as read_all_error:
+        mayz = crud.select_all(ENGINE, models.May)
+    except Exception as read_all_error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No mayz found"
+            detail="Read all error"
         ) from read_all_error
-    if mayz is None:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No mayz found"
-        )
-    return {'data': mayz}
+    if mayz:
+        return {'data': mayz}
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Mayz yet"
+    )
 
 
 @app.get("/mayz/latest")
 def read_latest():
     ''' Get latest may '''
     try:
-        latest_may = CONN.execute(
-            """ SELECT * FROM mayz
-                ORDER BY created_at
-                DESC LIMIT 1; """).fetchone()
-    except psycopg.OperationalError as read_latest_error:
+        latest_may = crud.select_latest(ENGINE, models.May)
+    except Exception as read_latest_error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No latest may found"
+            detail="Read all error"
         ) from read_latest_error
-    if latest_may is None:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No mayz found"
-        )
-    return {'data': latest_may}
+    if latest_may:
+        return {'data': latest_may}
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Mayz yet"
+    )
 
 
 @app.get("/mayz/{id_post}")
 def read_one(id_post: int):
     ''' Get specific may '''
     try:
-        chosen_may = CONN.execute(
-            """ SELECT * FROM mayz
-                WHERE id_may = %s; """,
-            (id_post,)).fetchone()
-    except psycopg.OperationalError as read_chosen_error:
+        may = crud.select_one(ENGINE, models.May, id_post)
+    except Exception as read_one_error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database Error"
-        ) from read_chosen_error
-    if chosen_may is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No mayz found"
+            detail="Read all error"
+        ) from read_one_error
+    if may:
+        return {'data': may}
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="No Mayz found"
         )
-    return {'data': chosen_may}
 
 
 @app.put("/mayz/{id_post}", status_code=status.HTTP_202_ACCEPTED)
@@ -173,3 +167,7 @@ def delete(id_post: int):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database Error"
         ) from delete_error
+
+
+if __name__ == "__main__":
+    db.create_mayz(ENGINE)
