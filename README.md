@@ -1,6 +1,6 @@
-# Social Media API
+# Yalemi API Tech Stack
 
-Social Media API with Python FastAPI and Postgres SQL.
+Yalemi Social Network API with FastAPI and SQLModel.
 
 ## Table of Contents
 
