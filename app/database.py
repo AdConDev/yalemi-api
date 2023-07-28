@@ -17,7 +17,7 @@ def create_db(sql_engine: engine):
     models.SQLModel.metadata.create_all(sql_engine)
 
 
-def create_mayz(sql_engine: engine):
+def create_mockup_mayz(sql_engine: engine):
     ''' Add mockup rows to Mayz table '''
     may_1 = models.May(
         title="May 1st",
