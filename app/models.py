@@ -6,7 +6,7 @@ from sqlmodel import Field, SQLModel, Column, Boolean, TIMESTAMP, text
 
 class May(SQLModel, table=True):
     ''' Defining the May Model '''
-    id_may: int | None = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     title: str = Field(max_length=30, index=True)
     content: str = Field(max_length=120, index=True)
     published: bool | None = Field(
