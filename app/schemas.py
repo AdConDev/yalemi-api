@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class May(BaseModel):
     ''' Defining the May schema '''
-    id_may: int | None
+    id: int | None
     title: str
     content: str
     published: bool = True
