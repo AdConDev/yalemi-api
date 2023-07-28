@@ -1,6 +1,6 @@
-# Yalemi Social Network API
+# Social Media API
 
-Project aims to be a complete backend to a twitter-like social network.
+Social Media API with Python FastAPI and Postgres SQL.
 
 ## Overall Components
 
