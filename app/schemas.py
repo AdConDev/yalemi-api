@@ -1,4 +1,4 @@
-''' Data Schema configuration using Pydantic '''
+''' Data Schema using Pydantic. Not needed anymore, SLQModel is enough. '''
 
 from pydantic import BaseModel
 
