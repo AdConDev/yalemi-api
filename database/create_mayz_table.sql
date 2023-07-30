@@ -22,7 +22,7 @@ ALTER TABLE IF EXISTS public.may
 
 CREATE INDEX IF NOT EXISTS ix_may_content
     ON public.may USING btree
-    (content COLLATE pg_catalog."default" ASC NULLS LAST)
+    (content COLLATE pg_catalog."default" A NULLS LAST)
     TABLESPACE pg_default;
 -- Index: ix_may_title
 
