@@ -1,0 +1,21 @@
+{
+    "cSpell.words": [
+        "adcon",
+        "mayz",
+        "psycopg",
+        "Pydantic",
+        "yalemi"
+    ],
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "Yalemi",
+            "group": "Yalemi Project",
+            "database": "Yalemi Dev",
+            "username": "adcon"
+        }
+    ]
+}
