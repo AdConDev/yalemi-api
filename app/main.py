@@ -1,14 +1,9 @@
 ''' Crating a Social Media API with FastAPI '''
 
 from fastapi import FastAPI, status, HTTPException
-try:
-    from . import database as db
-    from . import crud
-    from .models import MayRead, MayCreate, MayUpdate, May
-except ImportError:
-    import database as db
-    import crud
-    from models import MayRead, MayCreate, MayUpdate, May
+from . import database as db
+from . import crud
+from .models import MayRead, MayCreate, MayUpdate, May
 
 ENGINE = db.new_engine()
 app = FastAPI()
@@ -93,7 +88,3 @@ def delete_one_may(id_post: int):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No mayz with this id {id_post}"
             )
-
-
-if __name__ == "__main__":
-    db.create_mockup_mayz(ENGINE)
