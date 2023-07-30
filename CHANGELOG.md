@@ -1,4 +1,8 @@
-# 0.1.0 (2023-07-30)
+## [0.1.1](https://github.com/ConsDotPy/yalemi-api/compare/v0.1.0...v0.1.1) (2023-07-30)
+
+
+
+# [0.1.0](https://github.com/ConsDotPy/yalemi-api/compare/4c261a134e3269462cad4c1646381722ee4624c1...v0.1.0) (2023-07-30)
 
 
 ### Features
