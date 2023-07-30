@@ -2,7 +2,7 @@ name: Releases
 on:
   push:
     branches:
-      - tagging
+      - tags
 
 jobs:
   changelog:
@@ -41,7 +41,7 @@ jobs:
       # create PR using GitHub CLI
       - name: create PR with release info
         id: create-pr
-        run: gh pr create --base master --head release-from-${{ github.event.pull_request.head.sha }} --title 'Merge new release into master' --body 'Created by Github action'
+        run: gh pr create --base tags --head release-from-${{ github.event.pull_request.head.sha }} --title 'Merge new release into tags' --body 'Created by Github action'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -52,7 +52,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # release info is now in master so we can continue as before
+      # release info is now in tags so we can continue as before
       - name: create release with last commit
         uses: actions/create-release@v1
         if: steps.changelog.outputs.skipped == 'false'
