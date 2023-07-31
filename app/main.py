@@ -1,5 +1,5 @@
 ''' Crating a Social Media API with FastAPI '''
-
+# Bug fix 1
 from fastapi import FastAPI, status, HTTPException
 from . import database as db
 from . import crud
