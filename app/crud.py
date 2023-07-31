@@ -1,9 +1,9 @@
 ''' CRUD Operations for database '''
 
-from sqlmodel import Session, select, SQLModel, engine
+from sqlmodel import Session, select, SQLModel
 
 
-def insert_one(sql_eng: engine, table: SQLModel(table=True), model: SQLModel):
+def insert_one(sql_eng, table, model: SQLModel):
     ''' Add one entry to table '''
     with Session(sql_eng) as session:
         new_row = table.from_orm(model)
@@ -13,14 +13,14 @@ def insert_one(sql_eng: engine, table: SQLModel(table=True), model: SQLModel):
         return new_row
 
 
-def select_all(sql_eng: engine, table: SQLModel(table=True)):
+def select_all(sql_eng, table):
     ''' Select all rows from table '''
     with Session(sql_eng) as session:
         all_rows = session.exec(select(table)).all()
         return all_rows
 
 
-def select_latest(sql_eng: engine, table: SQLModel(table=True)):
+def select_latest(sql_eng, table):
     ''' Select all Mayz from database '''
     with Session(sql_eng) as session:
         query = select(table).order_by(table.created_at.desc())
@@ -28,7 +28,7 @@ def select_latest(sql_eng: engine, table: SQLModel(table=True)):
         return latest_row
 
 
-def select_id(sql_eng: engine, table: SQLModel(table=True), value: int):
+def select_id(sql_eng, table, value: int):
     ''' Select one May from database '''
     with Session(sql_eng) as session:
         query = session.get(table, value)
@@ -36,7 +36,7 @@ def select_id(sql_eng: engine, table: SQLModel(table=True), value: int):
 
 
 def update_id(
-    sql_eng: engine, table: SQLModel(table=True), model: SQLModel, index: int
+    sql_eng, table, model: SQLModel, index: int
 ):
     ''' Select one May from database '''
     with Session(sql_eng) as session:
@@ -51,7 +51,7 @@ def update_id(
         return edited_row
 
 
-def delete_id(sql_engine: engine, table: SQLModel(table=True), value: int):
+def delete_id(sql_engine, table, value: int):
     ''' Select one May from database '''
     with Session(sql_engine) as session:
         deleted_row = session.get(table, value)

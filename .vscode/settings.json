@@ -23,5 +23,6 @@
             "database": "yalemi-dev",
             "username": "adcon"
         }
-    ]
+    ],
+    "python.analysis.typeCheckingMode": "basic"
 }
