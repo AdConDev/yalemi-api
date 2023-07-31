@@ -1,10 +1,7 @@
 ''' Database connection and setup using SQLModel '''
 
 from sqlmodel import create_engine
-try:
-    from . import models
-except ImportError:
-    import models
+from . import models
 
 
 def new_engine():
