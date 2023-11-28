@@ -39,9 +39,10 @@ class May(MayBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(
-            TIMESTAMP(timezone=True), nullable=False,
+            TIMESTAMP(timezone=True),
+            nullable=False,
             server_default=text('NOW()')),
-        default=None, index=True)
+        default=None)
 
 
 class UserBase(SQLModel):
@@ -73,6 +74,7 @@ class User(UserCreate, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(
-            TIMESTAMP(timezone=True), nullable=False,
+            TIMESTAMP(timezone=True),
+            nullable=False,
             server_default=text('NOW()')),
-        default=None, index=True)
+        default=None)
