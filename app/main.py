@@ -1,6 +1,7 @@
 ''' Crating a Social Media API with FastAPI '''
 
 from contextlib import asynccontextmanager
+import sys
 from fastapi import FastAPI, status, HTTPException
 from passlib.context import CryptContext
 from . import database as db
@@ -13,14 +14,16 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(api: FastAPI):
     ''' Startup and shutdown event '''
     # Startup event
     print("Starting up...")
+    print(sys.getsizeof(api))
     db.create_db(ENGINE)
     yield
     # Shutdown event
     print("Shutting down...")
+    print(sys.getsizeof(api))
 
 
 app = FastAPI(lifespan=lifespan)

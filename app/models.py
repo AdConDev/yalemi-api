@@ -60,6 +60,7 @@ class UserRead(UserBase):
     ''' Defining the User Read Model '''
     id: int
     created_at: datetime
+    enabled: bool
 
 
 class UserUpdate(SQLModel):
@@ -67,6 +68,7 @@ class UserUpdate(SQLModel):
     username: str | None = None
     email: EmailStr | None = None
     password: str | None = None
+    enabled: bool | None = None
 
 
 class User(UserCreate, table=True):
@@ -78,3 +80,9 @@ class User(UserCreate, table=True):
             nullable=False,
             server_default=text('NOW()')),
         default=None)
+    enabled: bool | None = Field(
+        sa_column=Column(
+            Boolean(create_constraint=True),
+            server_default='TRUE', nullable=False
+        ),
+    )
