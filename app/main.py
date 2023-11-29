@@ -1,19 +1,29 @@
 ''' Crating a Social Media API with FastAPI '''
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, status, HTTPException
+from passlib.context import CryptContext
 from . import database as db
 from . import crud
 from .models import May, MayCreate, MayRead, MayUpdate
 from .models import User, UserCreate, UserRead, UserUpdate
 
 ENGINE = db.new_engine()
-app = FastAPI()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@app.on_event("startup")
-def startup_event():
-    ''' Startup event '''
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ''' Startup and shutdown event '''
+    # Startup event
+    print("Starting up...")
     db.create_db(ENGINE)
+    yield
+    # Shutdown event
+    print("Shutting down...")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/may", status_code=status.HTTP_201_CREATED, response_model=MayRead)
