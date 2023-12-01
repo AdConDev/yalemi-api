@@ -53,7 +53,7 @@ class UserBase(SQLModel):
 
 class UserCreate(UserBase):
     ''' Defining the User Create Model '''
-    password: str = Field(max_length=128, nullable=False)
+    hashed_password: str = Field(max_length=512, nullable=False)
 
 
 class UserRead(UserBase):
@@ -67,11 +67,11 @@ class UserUpdate(SQLModel):
     ''' Defining the User Update Model '''
     username: str | None = None
     email: EmailStr | None = None
-    password: str | None = None
+    hashed_password: str | None = None
     enabled: bool | None = None
 
 
-class User(UserCreate, table=True):
+class User(UserBase, table=True):
     ''' Defining the User Model '''
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
@@ -80,6 +80,7 @@ class User(UserCreate, table=True):
             nullable=False,
             server_default=text('NOW()')),
         default=None)
+    hashed_password: str = Field(max_length=512, nullable=False)
     enabled: bool | None = Field(
         sa_column=Column(
             Boolean(create_constraint=True),
