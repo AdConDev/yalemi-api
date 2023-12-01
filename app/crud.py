@@ -1,6 +1,7 @@
 ''' CRUD Operations for database '''
 
 from sqlmodel import Session, select, SQLModel
+from pydantic import EmailStr
 
 
 def insert_one(sql_eng, table, model: SQLModel):
@@ -29,9 +30,16 @@ def select_latest(sql_eng, table):
 
 
 def select_id(sql_eng, table, value: int):
-    ''' Select one May from database '''
+    ''' Select one May from database by ID '''
     with Session(sql_eng) as session:
         query = session.get(table, value)
+        return query
+
+
+def select_email(sql_eng, table, value: EmailStr):
+    ''' Select one May from database by email '''
+    with Session(sql_eng) as session:
+        query = session.exec(select(table).where(table.email == value)).first()
         return query
 
 

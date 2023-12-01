@@ -2,7 +2,7 @@
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.routers import user, may
+from app.routers import user, may, auth
 from app import database as db
 
 
@@ -14,6 +14,7 @@ async def lifespan(api: FastAPI):
     ''' Startup and shutdown event '''
     # Startup event
     print("Starting up...")
+    print(api)
     db.create_db(ENGINE)
     yield
     # Shutdown event
@@ -23,6 +24,7 @@ async def lifespan(api: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
 app.include_router(may.router)
+app.include_router(auth.router)
 
 
 @app.get("/")

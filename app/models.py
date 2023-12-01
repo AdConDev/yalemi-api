@@ -48,19 +48,12 @@ class May(MayBase, table=True):
 class UserBase(SQLModel):
     ''' Defining the User Base Model '''
     username: str | None = Field(max_length=25, index=True, nullable=False)
-    email: EmailStr = Field(unique=True, index=True, nullable=False)
 
 
-class UserCreate(UserBase):
-    ''' Defining the User Create Model '''
+class UserLogin(SQLModel):
+    ''' Defining the User Login Model '''
+    email: EmailStr = Field(nullable=False)
     hashed_password: str = Field(max_length=512, nullable=False)
-
-
-class UserRead(UserBase):
-    ''' Defining the User Read Model '''
-    id: int
-    created_at: datetime
-    enabled: bool
 
 
 class UserUpdate(SQLModel):
@@ -71,7 +64,20 @@ class UserUpdate(SQLModel):
     enabled: bool | None = None
 
 
-class User(UserBase, table=True):
+class UserCreate(UserBase):
+    ''' Defining the User Create Model '''
+    email: EmailStr = Field(unique=True, index=True, nullable=False)
+    hashed_password: str = Field(max_length=512, nullable=False)
+
+
+class UserRead(UserBase):
+    ''' Defining the User Read Model '''
+    id: int
+    created_at: datetime
+    enabled: bool
+
+
+class User(UserCreate, table=True):
     ''' Defining the User Model '''
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
@@ -80,7 +86,6 @@ class User(UserBase, table=True):
             nullable=False,
             server_default=text('NOW()')),
         default=None)
-    hashed_password: str = Field(max_length=512, nullable=False)
     enabled: bool | None = Field(
         sa_column=Column(
             Boolean(create_constraint=True),

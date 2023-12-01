@@ -15,7 +15,7 @@ router = APIRouter(
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserRead)
 def post_one_user(new_user: UserCreate):
     ''' Create a user '''
-    pwd_hash = utils.hash_pwd(new_user.hashed_password)
+    pwd_hash = utils.hashing(new_user.hashed_password)
     new_user.hashed_password = pwd_hash
     created_user = crud.insert_one(ENGINE, User, new_user)
     return created_user
