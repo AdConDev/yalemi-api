@@ -1,7 +1,7 @@
 ''' Database connection and setup using SQLModel '''
 
 from sqlmodel import create_engine
-from . import models
+from app import models
 
 
 def new_engine():
@@ -9,9 +9,9 @@ def new_engine():
     return create_engine(POSTGRES_URL, echo=True)
 
 
-def create_db(sql_engine):
+def create_db():
     ''' Create database and tables '''
-    models.SQLModel.metadata.create_all(sql_engine)
+    models.SQLModel.metadata.create_all(new_engine())
 
 
 POSTGRES_FILE = "yalemi-dev"
