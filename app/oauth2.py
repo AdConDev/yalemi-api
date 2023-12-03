@@ -15,40 +15,40 @@ ENGINE = db.new_engine()
 
 SECRET_KEY = "c20429beb3a9aee9430444de3a4535e674a05eaa1101707e56644fb293590a54"
 ALGORITHM = "HS256"
-EXPIRE_MINUTES = 5
+EXPIRE_MINUTES = 30
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    ''' Get current user from token '''
-    credentials_exception = HTTPException(
+credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    ''' Get current user from token '''
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
-        if username is None:
+        if not username:
             raise credentials_exception
         token_data = TokenData(username=username)
     except JWTError as exc:
         raise credentials_exception from exc
     user_db = crud.select_username(User, token_data.username)
-    if user_db:
-        return user_db
-    raise credentials_exception
+    if not user_db:
+        raise credentials_exception
+    return user_db
 
 
 def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)]
 ):
     ''' Get current user if active '''
-    if current_user.enabled:
-        return current_user
-    raise HTTPException(status_code=400, detail="Inactive user")
+    if not current_user.enabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
 
 
 def create_access_token(data: dict, expire_delta: timedelta | None = None):
@@ -67,9 +67,10 @@ def create_access_token(data: dict, expire_delta: timedelta | None = None):
 def authenticate_user(table, credentials: OAuth2PasswordRequestForm):
     ''' User authentication '''
     one_user = crud.select_username(table, credentials.username)
-    if one_user:
-        pwd_match = utils.verify_password(
-            credentials.password, one_user.hashed_password)
-        if pwd_match:
-            return one_user
-    return False
+    if not one_user:
+        return False
+    pwd_match = utils.verify_password(
+        credentials.password, one_user.hashed_password)
+    if not pwd_match:
+        return False
+    return one_user
