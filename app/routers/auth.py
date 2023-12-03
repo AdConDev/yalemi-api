@@ -24,7 +24,7 @@ def login_for_access_token(
     user = oauth2.authenticate_user(User, form_data)
     if user:
         access_token = oauth2.create_access_token(
-                data={"sub": user.username}
+                data={'sub': user.username}
             )
         return {'access_token': access_token, "token_type": "bearer"}
     raise HTTPException(

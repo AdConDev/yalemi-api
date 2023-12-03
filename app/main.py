@@ -30,4 +30,7 @@ app.include_router(auth.router)
 @app.get("/")
 def get_hello_world():
     ''' Hello World! '''
-    return {'FastAPI': 'Hello World!', 'SQLModel': 'Hello World!'}
+    return {'FastAPI': 'Hello World!',
+            'SQLModel': 'Hello World!',
+            'OAuth2': 'Hello World!'
+            }

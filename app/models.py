@@ -48,7 +48,7 @@ class May(MayBase, table=True):
 class UserBase(SQLModel):
     ''' Defining the User Base Model '''
     nickname: str | None = Field(
-        max_length=25, index=True, nullable=False, unique=True)
+        max_length=25, index=True, nullable=False)
 
 
 class UserLogin(SQLModel):

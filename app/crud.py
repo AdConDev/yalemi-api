@@ -47,6 +47,14 @@ def select_username(table, value: str):
         return query
 
 
+def select_nickname(table, value: str):
+    ''' Select one May from database by nickname '''
+    with Session(ENGINE) as session:
+        query = session.exec(
+            select(table).where(table.nickname == value)).first()
+        return query
+
+
 def update_id(table, model: SQLModel, index: int):
     ''' Select one May from database '''
     with Session(ENGINE) as session:
