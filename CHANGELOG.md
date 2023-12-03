@@ -1,9 +1,9 @@
-# 0.3.0 (2023-12-03)
+# 0.4.0 (2023-12-03)
 
 
 ### Features
 
-* :sparkles: add OAuth2 user authentication through token bearer ([b7b9a17](https://github.com/ConsDotPy/yalemi-api/commit/b7b9a172cbf078c3c66b65b7be7cc9bce1f67798))
+* :lock: add protection for routers ([bae52fd](https://github.com/ConsDotPy/yalemi-api/commit/bae52fdf2469299630d2a50ee7629ada2a49806a))
 
 
 
