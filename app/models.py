@@ -47,38 +47,35 @@ class May(MayBase, table=True):
 
 class UserBase(SQLModel):
     ''' Defining the User Base Model '''
-    username: str | None = Field(max_length=25, index=True, nullable=False)
+    nickname: str | None = Field(
+        max_length=25, index=True, nullable=False, unique=True)
 
 
 class UserLogin(SQLModel):
     ''' Defining the User Login Model '''
-    email: EmailStr = Field(nullable=False)
+    username: EmailStr = Field(nullable=False, unique=True)
     hashed_password: str = Field(max_length=512, nullable=False)
 
 
 class UserUpdate(SQLModel):
     ''' Defining the User Update Model '''
-    username: str | None = None
-    email: EmailStr | None = None
+    nickname: str | None = None
+    username: EmailStr | None = None
     hashed_password: str | None = None
     enabled: bool | None = None
 
 
-class UserCreate(UserBase):
+class UserCreate(UserBase, UserLogin):
     ''' Defining the User Create Model '''
-    email: EmailStr = Field(unique=True, index=True, nullable=False)
-    hashed_password: str = Field(max_length=512, nullable=False)
 
 
-class UserRead(UserBase):
-    ''' Defining the User Read Model '''
-    id: int
-    created_at: datetime
-    enabled: bool
+class UserData(UserBase):
+    ''' Defining the User Data Model '''
+    username: EmailStr = Field(nullable=False)
 
 
-class User(UserCreate, table=True):
-    ''' Defining the User Model '''
+class UserMetadata(SQLModel):
+    ''' Defining the User Metadata Model '''
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(
@@ -92,3 +89,23 @@ class User(UserCreate, table=True):
             server_default='TRUE', nullable=False
         ),
     )
+
+
+class UserRead(UserMetadata, UserData):
+    ''' Defining the User Read Model '''
+
+
+class User(UserRead, table=True):
+    ''' Defining the User Model '''
+    hashed_password: str = Field(max_length=512, nullable=False)
+
+
+class Token(SQLModel):
+    ''' Defining the Token Model '''
+    access_token: str
+    token_type: str
+
+
+class TokenData(SQLModel):
+    ''' Defining the Token Data Model '''
+    username: str
