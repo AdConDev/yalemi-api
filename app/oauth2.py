@@ -70,7 +70,7 @@ def authenticate_user(table, credentials: OAuth2PasswordRequestForm):
     if not one_user:
         return False
     pwd_match = utils.verify_password(
-        credentials.password, one_user.hashed_password)
+        credentials.password, one_user.password)
     if not pwd_match:
         return False
     return one_user

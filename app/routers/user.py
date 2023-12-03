@@ -22,8 +22,8 @@ router = APIRouter(
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserRead)
 def post_one_user(new_user: UserCreate):
     ''' Create a user '''
-    pwd_hash = utils.get_password_hash(new_user.hashed_password)
-    new_user.hashed_password = pwd_hash
+    pwd_hash = utils.get_password_hash(new_user.password)
+    new_user.password = pwd_hash
     created_user = crud.insert_one(User, new_user)
     return created_user
 
@@ -102,8 +102,8 @@ def put_one_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Nickname already exists"
             )
-    if updated_user.hashed_password:
-        pwd_hash = utils.get_password_hash(updated_user.hashed_password)
+    if updated_user.password:
+        pwd_hash = utils.get_password_hash(updated_user.password)
         updated_user.hashed_password = pwd_hash
     edited_user = crud.update_id(User, updated_user, id_user)
     return edited_user

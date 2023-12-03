@@ -54,14 +54,14 @@ class UserBase(SQLModel):
 class UserLogin(SQLModel):
     ''' Defining the User Login Model '''
     username: EmailStr = Field(nullable=False, unique=True)
-    hashed_password: str = Field(max_length=512, nullable=False)
+    password: str = Field(max_length=512, nullable=False)
 
 
 class UserUpdate(SQLModel):
     ''' Defining the User Update Model '''
     nickname: str | None = None
     username: EmailStr | None = None
-    hashed_password: str | None = None
+    password: str | None = None
     enabled: bool | None = None
 
 
@@ -97,7 +97,7 @@ class UserRead(UserMetadata, UserData):
 
 class User(UserRead, table=True):
     ''' Defining the User Model '''
-    hashed_password: str = Field(max_length=512, nullable=False)
+    password: str = Field(max_length=512, nullable=False)
 
 
 class Token(SQLModel):
