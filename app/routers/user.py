@@ -1,41 +1,59 @@
+# pylint: disable=E1101
 ''' Router for Users '''
 
 from typing import Annotated
 from fastapi import APIRouter, status, HTTPException, Depends
+from sqlmodel import Session, select
 from app.models import User, UserCreate, UserRead, UserUpdate, UserData
-from app import utils, crud, oauth2
+from app import utils, oauth2
+from app.database import engine
 
 
 auth_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 
 router = APIRouter(
     prefix="/user",
     tags=["Users"]
-    )
+)
+
+
+def get_session():
+    ''' Get database session '''
+    with Session(engine) as session:
+        yield session
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserRead)
-def post_one_user(new_user: UserCreate):
+def post_one_user(
+    *,
+    new_user: UserCreate,
+    session: Session = Depends(get_session)
+):
     ''' Create a user '''
     pwd_hash = utils.get_password_hash(new_user.password)
     new_user.password = pwd_hash
-    created_user = crud.insert_one(User, new_user)
+    created_user = User.from_orm(new_user)
+    session.add(created_user)
+    session.commit()
+    session.refresh(created_user)
     return created_user
 
 
 @router.get("/", response_model=list[UserRead])
 def get_all_user(
-    current_user: Annotated[User, Depends(oauth2.get_current_active_user)]
+    *,
+    current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
+    session: Session = Depends(get_session)
 ):
     ''' Get all Users '''
     if not current_user:
         raise auth_exception
-    all_users = crud.select_all(User)
+    all_users = session.exec(select(User)).all()
     if not all_users:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -45,12 +63,14 @@ def get_all_user(
 
 @router.get("/latest/", response_model=UserRead)
 def get_latest_user(
-    current_user: Annotated[User, Depends(oauth2.get_current_active_user)]
+    current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
+    session: Session = Depends(get_session)
 ):
     ''' Get latest User '''
     if not current_user:
         raise auth_exception
-    latest_user = crud.select_latest(User)
+    query = select(User).order_by(User.created_at.desc())  # type: ignore
+    latest_user = session.exec(query).first()
     if not latest_user:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -59,60 +79,78 @@ def get_latest_user(
     return latest_user
 
 
-@router.get("/{id_user}/", response_model=UserRead)
+@router.get("/{user_id}/", response_model=UserRead)
 def get_one_user(
-    id_user: int,
-    current_user: Annotated[User, Depends(oauth2.get_current_active_user)]
+    user_id: int,
+    current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
+    session: Session = Depends(get_session)
 ):
     ''' Get specific User '''
     if not current_user:
         raise auth_exception
-    one_user = crud.select_id(User, id_user)
+    one_user = session.get(User, user_id)
     if not one_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No User with ID {id_user} found"
-            )
+            detail=f"No User with ID {user_id} found"
+        )
     return one_user
 
 
 @router.put(
-    "/{id_user}/", status_code=status.HTTP_202_ACCEPTED,
+    "/{user_id}/", status_code=status.HTTP_202_ACCEPTED,
     response_model=UserData
-    )
+)
 def put_one_user(
-    id_user: int,
-    updated_user: UserUpdate,
-    current_user: Annotated[User, Depends(oauth2.get_current_active_user)]
+    user_id: int,
+    user_update: UserUpdate,
+    current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
+    session: Session = Depends(get_session)
 ):
     ''' Update specific User if logged in '''
-    if current_user.id != id_user:
+    if current_user.id != user_id:
         raise auth_exception
-    if updated_user.username:
-        username = crud.select_username(User, updated_user.username)
-        if username:
+    if user_update.username:
+        username_exist = session.exec(
+            select(User).where(User.username == user_update.username)
+            ).first()
+        if username_exist:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already exists"
             )
-    if updated_user.password:
-        pwd_hash = utils.get_password_hash(updated_user.password)
-        updated_user.hashed_password = pwd_hash
-    edited_user = crud.update_id(User, updated_user, id_user)
+    if user_update.password:
+        pwd_hash = utils.get_password_hash(user_update.password)
+        user_update.password = pwd_hash
+    edited_user = session.get(User, user_id)
+    if not edited_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User does not exist"
+            )
+    new_user = user_update.dict(exclude_unset=True)
+    for key, value in new_user.items():
+        setattr(edited_user, key, value)
+    session.add(edited_user)
+    session.commit()
+    session.refresh(edited_user)
     return edited_user
 
 
-@router.delete("/{id_user}/", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_one_user(
-    id_user: int,
-    current_user: Annotated[User, Depends(oauth2.get_current_active_user)]
+    user_id: int,
+    current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
+    session: Session = Depends(get_session)
 ):
     ''' Delete specific User '''
-    if current_user.id != id_user:
+    if current_user.id != user_id:
         raise auth_exception
-    deleted_user = crud.delete_id(User, id_user)
+    deleted_user = session.get(User, user_id)
     if not deleted_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No User with this id {id_user}"
+            detail=f"No User with this id {user_id}"
             )
+    session.delete(deleted_user)
+    session.commit()
