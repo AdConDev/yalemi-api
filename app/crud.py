@@ -43,7 +43,7 @@ def select_username(table, value: str):
     ''' Select one May from database by email '''
     with Session(ENGINE) as session:
         query = session.exec(
-            select(table).where(table.username == value)).first()
+            select(table).where(table.username == value)).one()
         return query
 
 
@@ -51,7 +51,7 @@ def select_nickname(table, value: str):
     ''' Select one May from database by nickname '''
     with Session(ENGINE) as session:
         query = session.exec(
-            select(table).where(table.nickname == value)).first()
+            select(table).where(table.nickname == value)).all()
         return query
 
 

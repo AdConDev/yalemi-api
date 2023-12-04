@@ -47,14 +47,7 @@ class May(MayBase, table=True):
 
 class UserBase(SQLModel):
     ''' Defining the User Base Model '''
-    nickname: str | None = Field(
-        max_length=25, index=True, nullable=False)
-
-
-class UserLogin(SQLModel):
-    ''' Defining the User Login Model '''
-    username: EmailStr = Field(nullable=False, unique=True)
-    password: str = Field(max_length=512, nullable=False)
+    nickname: str | None = Field(max_length=25, nullable=False)
 
 
 class UserUpdate(SQLModel):
@@ -65,13 +58,15 @@ class UserUpdate(SQLModel):
     enabled: bool | None = None
 
 
-class UserCreate(UserBase, UserLogin):
+class UserCreate(UserBase):
     ''' Defining the User Create Model '''
+    username: EmailStr = Field(nullable=False, unique=True)
+    password: str = Field(max_length=512, nullable=False)
 
 
 class UserData(UserBase):
     ''' Defining the User Data Model '''
-    username: EmailStr = Field(nullable=False)
+    username: EmailStr = Field(nullable=False, unique=True, index=True)
 
 
 class UserMetadata(SQLModel):

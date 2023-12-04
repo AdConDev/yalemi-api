@@ -95,13 +95,6 @@ def put_one_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already exists"
             )
-    if updated_user.nickname:
-        nickname = crud.select_nickname(User, updated_user.nickname)
-        if nickname:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Nickname already exists"
-            )
     if updated_user.password:
         pwd_hash = utils.get_password_hash(updated_user.password)
         updated_user.hashed_password = pwd_hash
