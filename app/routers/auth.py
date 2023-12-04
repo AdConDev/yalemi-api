@@ -4,11 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models import User, Token, UserRead
-from app import database as db
 from app import oauth2
 
 
-ENGINE = db.new_engine()
 router = APIRouter(
     prefix="/login",
     tags=["Authentication"]

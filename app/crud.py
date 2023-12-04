@@ -4,7 +4,7 @@ from sqlmodel import Session, select, SQLModel
 from app import database as db
 
 
-ENGINE = db.new_engine()
+ENGINE = db.engine
 
 
 def insert_one(table, model: SQLModel):
@@ -43,7 +43,7 @@ def select_username(table, value: str):
     ''' Select one May from database by email '''
     with Session(ENGINE) as session:
         query = session.exec(
-            select(table).where(table.username == value)).one()
+            select(table).where(table.username == value)).first()
         return query
 
 

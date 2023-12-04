@@ -7,10 +7,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from app import utils
 from app.models import User, TokenData
-from app import crud, database as db
-
-
-ENGINE = db.new_engine()
+from app import crud
 
 
 SECRET_KEY = "c20429beb3a9aee9430444de3a4535e674a05eaa1101707e56644fb293590a54"
