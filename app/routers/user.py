@@ -5,8 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlmodel import Session, select
 from app.models import User, UserCreate, UserRead, UserUpdate, UserData
-from app import utils, oauth2
-from app.database import engine
+from app import utils, oauth2, database as db
 
 
 auth_exception = HTTPException(
@@ -22,17 +21,11 @@ router = APIRouter(
 )
 
 
-def get_session():
-    ''' Get database session '''
-    with Session(engine) as session:
-        yield session
-
-
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserRead)
 def post_one_user(
     *,
     new_user: UserCreate,
-    session: Session = Depends(get_session)
+    session: Session = Depends(db.get_session)
 ):
     ''' Create a user '''
     pwd_hash = utils.get_password_hash(new_user.password)
@@ -48,7 +41,7 @@ def post_one_user(
 def get_all_user(
     *,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(db.get_session)
 ):
     ''' Get all Users '''
     if not current_user:
@@ -64,7 +57,7 @@ def get_all_user(
 @router.get("/latest/", response_model=UserRead)
 def get_latest_user(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(db.get_session)
 ):
     ''' Get latest User '''
     if not current_user:
@@ -83,7 +76,7 @@ def get_latest_user(
 def get_one_user(
     user_id: int,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(db.get_session)
 ):
     ''' Get specific User '''
     if not current_user:
@@ -105,7 +98,7 @@ def put_one_user(
     user_id: int,
     user_update: UserUpdate,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(db.get_session)
 ):
     ''' Update specific User if logged in '''
     if current_user.id != user_id:
@@ -123,11 +116,6 @@ def put_one_user(
         pwd_hash = utils.get_password_hash(user_update.password)
         user_update.password = pwd_hash
     edited_user = session.get(User, user_id)
-    if not edited_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User does not exist"
-            )
     new_user = user_update.dict(exclude_unset=True)
     for key, value in new_user.items():
         setattr(edited_user, key, value)
@@ -141,7 +129,7 @@ def put_one_user(
 def delete_one_user(
     user_id: int,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
-    session: Session = Depends(get_session)
+    session: Session = Depends(db.get_session)
 ):
     ''' Delete specific User '''
     if current_user.id != user_id:
