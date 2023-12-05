@@ -5,26 +5,38 @@ from pydantic import EmailStr
 from sqlmodel import Field, SQLModel, Column, Boolean, TIMESTAMP, text
 
 
-class MayBase(SQLModel):
-    ''' Defining the May Base Model '''
+class MayData(SQLModel):
+    ''' Defining the May Data Model '''
     title: str = Field(max_length=30, index=True, nullable=False)
-    content: str = Field(max_length=150, index=True, nullable=False)
+    content: str = Field(max_length=150, nullable=False)
     published: bool | None = Field(
         sa_column=Column(
             Boolean(create_constraint=True),
             server_default='TRUE', nullable=False
-        ),
-    )
+            ),
+        )
 
 
-class MayCreate(MayBase):
-    ''' Defining the May Crate Model '''
+class MayMetadata(SQLModel):
+    ''' Defining the May Metadata Model '''
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime | None = Field(
+        sa_column=Column(
+            TIMESTAMP(timezone=True),
+            nullable=False,
+            server_default=text('NOW()')
+            ),
+        default=None)
+    user_id: int | None = Field(nullable=False, foreign_key='user.id')
+    likes: int | None = Field(default=0)
 
 
-class MayRead(MayBase):
+class MayCreate(MayData):
+    ''' Defining the May Create Model '''
+
+
+class MayRead(MayData, MayMetadata):
     ''' Defining the May Model '''
-    id: int
-    created_at: datetime
 
 
 class MayUpdate(SQLModel):
@@ -34,20 +46,13 @@ class MayUpdate(SQLModel):
     published: bool | None = None
 
 
-class May(MayBase, table=True):
+class May(MayRead, table=True):
     ''' Defining the May Model '''
-    id: int | None = Field(default=None, primary_key=True)
-    created_at: datetime = Field(
-        sa_column=Column(
-            TIMESTAMP(timezone=True),
-            nullable=False,
-            server_default=text('NOW()')),
-        default=None)
 
 
 class UserBase(SQLModel):
     ''' Defining the User Base Model '''
-    nickname: str | None = Field(max_length=25, nullable=False)
+    nickname: str = Field(max_length=25, nullable=False)
 
 
 class UserUpdate(SQLModel):
