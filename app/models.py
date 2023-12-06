@@ -1,53 +1,11 @@
 ''' Table Model configuration with SQLModel '''
 
 from datetime import datetime
+from typing import List
 from pydantic import EmailStr
-from sqlmodel import Field, SQLModel, Column, Boolean, TIMESTAMP, text
-
-
-class MayData(SQLModel):
-    ''' Defining the May Data Model '''
-    title: str = Field(max_length=30, index=True, nullable=False)
-    content: str = Field(max_length=150, nullable=False)
-    published: bool | None = Field(
-        sa_column=Column(
-            Boolean(create_constraint=True),
-            server_default='TRUE', nullable=False
-            ),
-        )
-
-
-class MayMetadata(SQLModel):
-    ''' Defining the May Metadata Model '''
-    id: int | None = Field(default=None, primary_key=True)
-    created_at: datetime | None = Field(
-        sa_column=Column(
-            TIMESTAMP(timezone=True),
-            nullable=False,
-            server_default=text('NOW()')
-            ),
-        default=None)
-    user_id: int | None = Field(nullable=False, foreign_key='user.id')
-    likes: int | None = Field(default=0)
-
-
-class MayCreate(MayData):
-    ''' Defining the May Create Model '''
-
-
-class MayRead(MayData, MayMetadata):
-    ''' Defining the May Model '''
-
-
-class MayUpdate(SQLModel):
-    ''' Defining the May Update Model '''
-    title: str | None = None
-    content: str | None = None
-    published: bool | None = None
-
-
-class May(MayRead, table=True):
-    ''' Defining the May Model '''
+from sqlmodel import (
+    Field, SQLModel, Column, Boolean, TIMESTAMP, text, Relationship
+    )
 
 
 class UserBase(SQLModel):
@@ -69,7 +27,7 @@ class UserCreate(UserBase):
     username: str = Field(
         max_length=15, nullable=False, unique=True, index=True)
     email: EmailStr = Field(nullable=False, unique=True)
-    password: str = Field(max_length=512, nullable=False)
+    password: str = Field(max_length=64, nullable=False)
 
 
 class UserData(UserBase):
@@ -103,6 +61,59 @@ class UserRead(UserMetadata, UserData):
 class User(UserRead, table=True):
     ''' Defining the User Model '''
     password: str = Field(max_length=64, nullable=False)
+    mayz: List["May"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"cascade": "all,delete,delete-orphan"}
+        )
+
+
+class MayData(SQLModel):
+    ''' Defining the May Data Model '''
+    title: str = Field(max_length=30, index=True, nullable=False)
+    content: str = Field(max_length=150, nullable=False)
+    published: bool | None = Field(
+        sa_column=Column(
+            Boolean(create_constraint=True),
+            server_default='TRUE', nullable=False
+            ),
+        )
+
+
+class MayMetadata(SQLModel):
+    ''' Defining the May Metadata Model '''
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime | None = Field(
+        sa_column=Column(
+            TIMESTAMP(timezone=True),
+            nullable=False,
+            server_default=text('NOW()')
+            ),
+        default=None)
+    likes: int | None = Field(default=0)
+
+
+class MayCreate(MayData):
+    ''' Defining the May Create Model '''
+
+
+class MayRead(MayData, MayMetadata):
+    ''' Defining the May Model '''
+    user_id: int | None = Field(
+        nullable=False,
+        foreign_key='user.id',
+        )
+
+
+class MayUpdate(SQLModel):
+    ''' Defining the May Update Model '''
+    title: str | None = None
+    content: str | None = None
+    published: bool | None = None
+
+
+class May(MayRead, table=True):
+    ''' Defining the May Model '''
+    user: User | None = Relationship(back_populates="mayz")
 
 
 class Token(SQLModel):
