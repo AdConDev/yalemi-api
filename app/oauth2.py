@@ -30,10 +30,11 @@ def get_current_user(
     ''' Get current user from token '''
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if not username:
+        username = payload.get("username")
+        email = payload.get("email")
+        if not username or not email:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(username=username, email=email)
     except JWTError as exc:
         raise credentials_exception from exc
     user_in_db = session.exec(

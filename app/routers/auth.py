@@ -30,7 +30,7 @@ def login_for_access_token(
             detail="Invalid email or password"
         )
     access_token = oauth2.create_access_token(
-            data={'sub': user_auth.username}
+            data={'username': user_auth.username, 'email': user_auth.email}
         )
     return {'access_token': access_token, "token_type": "bearer"}
 

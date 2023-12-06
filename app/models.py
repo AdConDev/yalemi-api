@@ -114,3 +114,4 @@ class Token(SQLModel):
 class TokenData(SQLModel):
     ''' Defining the Token Data Model '''
     username: str
+    email: str
