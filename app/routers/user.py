@@ -4,16 +4,21 @@
 from typing import Annotated
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlmodel import Session, select
-from app.models import User, UserCreate, UserRead, UserUpdate, UserData
+from app.models import User, UserCreate, UserRead, UserUpdate
 from app import utils, oauth2, database as db
 
 
-auth_exception = HTTPException(
+unauth_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+forb_exception = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="You don't have enough permissions",
+    headers={"WWW-Authenticate": "Bearer"},
+    )
 
 router = APIRouter(
     prefix="/user",
@@ -48,14 +53,14 @@ def post_one_user(
 
 
 @router.get("/", response_model=list[UserRead])
-def get_all_user(
+def get_all_users(
     *,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
     ''' Get all Users '''
     if not current_user:
-        raise auth_exception
+        raise unauth_exception
     all_users = session.exec(select(User)).all()
     if not all_users:
         raise HTTPException(
@@ -71,9 +76,10 @@ def get_latest_user(
 ):
     ''' Get latest User '''
     if not current_user:
-        raise auth_exception
-    query = select(User).order_by(User.created_at.desc())  # type: ignore
-    latest_user = session.exec(query).first()
+        raise unauth_exception
+    latest_user = session.exec(
+        select(User).order_by(User.created_at.desc())  # type: ignore
+        ).first()
     if not latest_user:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -90,7 +96,7 @@ def get_one_user(
 ):
     ''' Get specific User '''
     if not current_user:
-        raise auth_exception
+        raise unauth_exception
     one_user = session.get(User, user_id)
     if not one_user:
         raise HTTPException(
@@ -102,7 +108,7 @@ def get_one_user(
 
 @router.put(
     "/{user_id}/", status_code=status.HTTP_202_ACCEPTED,
-    response_model=UserData
+    response_model=UserRead
 )
 def put_one_user(
     user_id: int,
@@ -112,7 +118,7 @@ def put_one_user(
 ):
     ''' Update specific User if logged in '''
     if current_user.id != user_id:
-        raise auth_exception
+        raise forb_exception
     if user_update.username:
         username_exist = session.exec(
             select(User).where(User.username == user_update.username)
@@ -152,7 +158,7 @@ def delete_one_user(
 ):
     ''' Delete specific User '''
     if current_user.id != user_id:
-        raise auth_exception
+        raise forb_exception
     deleted_user = session.get(User, user_id)
     if not deleted_user:
         raise HTTPException(
