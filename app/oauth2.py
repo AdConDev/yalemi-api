@@ -4,15 +4,15 @@ from typing import Annotated
 from datetime import datetime as dt, timedelta
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlmodel import Session, select
 from jose import jwt, JWTError
-from app import utils
+from app import utils, database as db
 from app.models import User, TokenData
-from app import crud
 
 
 SECRET_KEY = "c20429beb3a9aee9430444de3a4535e674a05eaa1101707e56644fb293590a54"
 ALGORITHM = "HS256"
-EXPIRE_MINUTES = 30
+EXPIRE_MINUTES = 60
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -23,7 +23,10 @@ credentials_exception = HTTPException(
     )
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    session: Annotated[Session, Depends(db.get_session)]
+):
     ''' Get current user from token '''
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -33,10 +36,11 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         token_data = TokenData(username=username)
     except JWTError as exc:
         raise credentials_exception from exc
-    user_db = crud.select_username(User, token_data.username)
-    if not user_db:
+    user_in_db = session.exec(
+            select(User).where(User.username == token_data.username)).first()
+    if not user_in_db:
         raise credentials_exception
-    return user_db
+    return user_in_db
 
 
 def get_current_active_user(
@@ -61,13 +65,15 @@ def create_access_token(data: dict, expire_delta: timedelta | None = None):
     return encoded_jwt
 
 
-def authenticate_user(table, credentials: OAuth2PasswordRequestForm):
+def authenticate_user(
+    user_in_db: User | None,
+    credentials: OAuth2PasswordRequestForm
+):
     ''' User authentication '''
-    one_user = crud.select_username(table, credentials.username)
-    if not one_user:
+    if not user_in_db:
         return False
     pwd_match = utils.verify_password(
-        credentials.password, one_user.password)
+        credentials.password, user_in_db.password)
     if not pwd_match:
         return False
-    return one_user
+    return user_in_db
