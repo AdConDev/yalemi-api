@@ -58,20 +58,25 @@ class UserBase(SQLModel):
 class UserUpdate(SQLModel):
     ''' Defining the User Update Model '''
     nickname: str | None = None
-    username: EmailStr | None = None
+    email: EmailStr | None = None
+    username: str | None = None
     password: str | None = None
     enabled: bool | None = None
 
 
 class UserCreate(UserBase):
     ''' Defining the User Create Model '''
-    username: EmailStr = Field(nullable=False, unique=True)
+    username: str = Field(
+        max_length=15, nullable=False, unique=True, index=True)
+    email: EmailStr = Field(nullable=False, unique=True)
     password: str = Field(max_length=512, nullable=False)
 
 
 class UserData(UserBase):
     ''' Defining the User Data Model '''
-    username: EmailStr = Field(nullable=False, unique=True, index=True)
+    username: str = Field(
+        max_length=15, nullable=False, unique=True, index=True)
+    email: EmailStr = Field(nullable=False, unique=True, index=True)
 
 
 class UserMetadata(SQLModel):
@@ -97,7 +102,7 @@ class UserRead(UserMetadata, UserData):
 
 class User(UserRead, table=True):
     ''' Defining the User Model '''
-    password: str = Field(max_length=512, nullable=False)
+    password: str = Field(max_length=64, nullable=False)
 
 
 class Token(SQLModel):

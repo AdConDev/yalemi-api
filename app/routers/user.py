@@ -29,11 +29,14 @@ def post_one_user(
 ):
     ''' Create a user '''
     user_in_db = session.exec(
-            select(User).where(User.username == new_user.username)).first()
+            select(User).where(
+                User.username == new_user.username or
+                User.email == new_user.email
+                )).first()
     if user_in_db:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already exists"
+            detail="Username/email already exists"
         )
     pwd_hash = utils.get_password_hash(new_user.password)
     new_user.password = pwd_hash
@@ -118,7 +121,16 @@ def put_one_user(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already exists"
-            )
+                )
+    if user_update.email:
+        email_exist = session.exec(
+            select(User).where(User.email == user_update.email)
+            ).first()
+        if email_exist:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already exists"
+                )
     if user_update.password:
         pwd_hash = utils.get_password_hash(user_update.password)
         user_update.password = pwd_hash
