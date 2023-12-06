@@ -28,6 +28,13 @@ def post_one_user(
     session: Session = Depends(db.get_session)
 ):
     ''' Create a user '''
+    user_in_db = session.exec(
+            select(User).where(User.username == new_user.username)).first()
+    if user_in_db:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already exists"
+        )
     pwd_hash = utils.get_password_hash(new_user.password)
     new_user.password = pwd_hash
     created_user = User.from_orm(new_user)
