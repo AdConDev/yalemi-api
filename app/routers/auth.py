@@ -41,11 +41,3 @@ def read_users_me(
 ):
     ''' Get authenticated current user '''
     return current_user
-
-
-@router.get("/me/mayz/")
-def read_own_items(
-    current_user: Annotated[User, Depends(oauth2.get_current_active_user)]
-):
-    ''' Get authenticated current user mayz '''
-    return [{"may_id": 100, "owner": current_user.nickname}]
