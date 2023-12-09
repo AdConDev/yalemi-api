@@ -3,7 +3,7 @@
 
 from typing import Annotated
 from fastapi import APIRouter, status, HTTPException, Depends
-from sqlmodel import Session, select
+from sqlmodel import Session, select, column
 from app.models import May, MayCreate, MayRead, MayUpdate, User
 from app import oauth2, database as db
 
@@ -48,12 +48,19 @@ def post_one_may(
 def get_all_mayz(
     *,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
-    session: Session = Depends(db.get_session)
+    session: Session = Depends(db.get_session),
+    limit: int = 100,
+    skip: int = 0,
+    search: str = ''
 ):
     ''' Get all Mayz '''
     if not current_user:
         raise unauth_exception
-    all_mayz = session.exec(select(May)).all()
+    all_mayz = session.exec(
+        select(May).where(
+            column('title').regexp_match(search, 'i')
+            ).offset(skip).limit(limit)
+        ).all()
     if not all_mayz:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -68,7 +75,7 @@ def get_my_mayz(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
-    ''' Get all Mayz '''
+    ''' Get all my Mayz '''
     if not current_user:
         raise unauth_exception
     all_mayz = session.exec(
