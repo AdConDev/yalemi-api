@@ -1,5 +1,5 @@
-''' Table Model configuration with SQLModel '''
-
+''' Defines the data models for application using SQLModel '''
+# May stands for a kind of post in the application
 from datetime import datetime
 from typing import List
 from pydantic import EmailStr
@@ -9,7 +9,7 @@ from sqlmodel import (
 
 
 class UserCreate(SQLModel):
-    ''' Defining the User Create Model '''
+    ''' Represents the data needed to create a new user '''
     nickname: str | None = Field(max_length=25, nullable=True)
     username: str = Field(
         max_length=15, nullable=False, unique=True, index=True
@@ -19,7 +19,7 @@ class UserCreate(SQLModel):
 
 
 class User(UserCreate, table=True):
-    ''' Defining the User Model '''
+    ''' Extends UserCreate and represents a user in the database '''
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(
@@ -40,7 +40,7 @@ class User(UserCreate, table=True):
 
 
 class UserMay(SQLModel):
-    ''' Defining the User Data Model '''
+    ''' Represents a subset of the user data for May relationships '''
     id: int | None = None
     nickname: str | None = None
     username: str | None = None
@@ -48,7 +48,7 @@ class UserMay(SQLModel):
 
 
 class UserUpdate(SQLModel):
-    ''' Defining the User Update Model '''
+    ''' Represents the data needed to update an user '''
     nickname: str | None = None
     username: str | None = None
     enabled: bool | None = None
@@ -57,19 +57,20 @@ class UserUpdate(SQLModel):
 
 
 class UserRead(UserMay):
-    ''' Defining the User Read Model '''
+    ''' Extends UserMay and represents the data returned when reading a
+    user '''
     created_at: datetime | None = None
     mayz: List['MayUser'] | None = None
 
 
 class MayCreate(SQLModel):
-    ''' Defining the May Create Model '''
+    ''' Represents the data needed to create a new May '''
     title: str = Field(max_length=30, index=True, nullable=False)
     content: str = Field(max_length=150, nullable=False)
 
 
 class May(MayCreate, table=True):
-    ''' Defining the May Model '''
+    ''' Extends MayCreate and represents a May in the database '''
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime | None = Field(
         sa_column=Column(
@@ -87,35 +88,38 @@ class May(MayCreate, table=True):
 
 
 class MayUser(SQLModel):
-    ''' Defining the May User Model '''
+    ''' Represents a subset of the May data for User relationships '''
     id: int | None = None
     title: str | None = None
     content: str | None = None
 
 
 class MayUpdate(SQLModel):
-    ''' Defining the May Update Model '''
+    ''' Represents the data needed to update a May '''
     title: str | None = None
     content: str | None = None
 
 
 class MayRead(MayUser):
-    ''' Defining the May Data Model '''
+    ''' Extends MayUser and represents the data returned when reading a May '''
     created_at: datetime | None = None
     likes: int | None = None
     user: UserMay | None = None
 
 
 class Token(SQLModel):
-    ''' Defining the Token Model '''
+    ''' Represents a token '''
     access_token: str
     token_type: str
 
 
 class TokenData(SQLModel):
-    ''' Defining the Token Data Model '''
-    username: str
-    email: str
+    ''' Represents the data in a token '''
+    username: str | None
+    email: str | None
 
 
+# Update forward references, which is necessary because of the circular
+# references between the User and May classes.
 UserRead.update_forward_refs()
+MayRead.update_forward_refs()

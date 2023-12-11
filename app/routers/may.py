@@ -1,5 +1,5 @@
 # pylint: disable=E1101
-''' Router for Mayz '''
+''' Defines the routes for May-related operations in the application. '''
 
 from typing import Annotated
 from fastapi import APIRouter, status, HTTPException, Depends
@@ -33,9 +33,12 @@ def post_one_may(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
-    ''' Create a may '''
+    ''' Route to create a May '''
+    # Validate user
     if not current_user:
         raise unauth_exception
+    # It creates a new May with the data from create_may and the user_id of
+    # current_user
     new_may = May(user_id=current_user.id, **create_may.dict())
     created_may = May.from_orm(new_may)
     session.add(created_may)
@@ -53,14 +56,18 @@ def get_all_mayz(
     skip: int = 0,
     search: str = ''
 ):
-    ''' Get all Mayz '''
+    ''' Route to get all Mays '''
+    # Validate user
     if not current_user:
         raise unauth_exception
+    # It gets all Mays that match the search string, skips the first skip Mays,
+    # limits the result to limit Mays, and returns them.
     all_mayz = session.exec(
         select(May).where(
             column('title').regexp_match(search, 'i')
             ).offset(skip).limit(limit)
         ).all()
+    # If there are no Mays, it raises an exception
     if not all_mayz:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -75,9 +82,12 @@ def get_my_mayz(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
-    ''' Get all my Mayz '''
+    ''' Route to get all Mays of the current user '''
+    # Validate user
     if not current_user:
         raise unauth_exception
+    # It gets all Mays where the user_id is the id of current_user and returns
+    # them.
     all_mayz = session.exec(
         select(May).where(May.user_id == current_user.id)
         ).all()
@@ -95,12 +105,15 @@ def get_latest_may(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
-    ''' Get latest may '''
+    ''' Route to get the latest May '''
+    # Validate user
     if not current_user:
         raise unauth_exception
+    # It gets the latest May by created_at and returns it.
     latest_may = session.exec(
         select(May).order_by(May.created_at.desc())  # type: ignore
         ).first()
+    # If there are no Mays, it raises an exception
     if not latest_may:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -115,10 +128,13 @@ def get_may(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
-    ''' Get specific may '''
+    ''' Route to get a specific May '''
+    # Validate user
     if not current_user:
         raise unauth_exception
+    # It gets the May with the id may_id and returns it.
     one_may = session.get(May, may_id)
+    # If there is no May with that id, it raises an exception
     if not one_may:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -136,17 +152,22 @@ def put_may(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
-    ''' Update specific may '''
+    ''' Route to update a specific May '''
+    # Validate user
     if not current_user:
         raise unauth_exception
+    # It gets the May with the id may_id
     edited_may = session.get(May, may_id)
+    # If there is no May with that id, it raises an exception
     if not edited_may:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No May with ID {may_id} found"
             )
+    # If the user is not the owner of the May, it raises an exception
     if edited_may.user_id != current_user.id:
         raise forb_exception
+    # It updates the May with the data from may_update and returns it.
     new_may = may_update.dict(exclude_unset=True)
     for key, value in new_may.items():
         setattr(edited_may, key, value)
@@ -162,16 +183,21 @@ def delete_may(
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
 ):
-    ''' Delete specific may '''
+    ''' Route to delete a specific May '''
+    # Validate user
     if not current_user:
         raise unauth_exception
+    # It gets the May with the id may_id
     deleted_may = session.get(May, may_id)
+    # If there is no May with that id, it raises an exception
     if not deleted_may:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No mayz with this id {may_id}"
             )
+    # If the user is not the owner of the May, it raises an exception
     if deleted_may.user_id != current_user.id:
         raise forb_exception
+    # It deletes the May and returns nothing.
     session.delete(deleted_may)
     session.commit()
