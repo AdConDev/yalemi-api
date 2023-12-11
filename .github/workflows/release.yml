@@ -36,7 +36,6 @@ jobs:
           git-branch: "release-from-${{ github.event.pull_request.head.sha }}"
           skip-on-empty: false
           skip-git-pull: true
-          output-file: "CHANGELOG.md"
 
       # create PR using GitHub CLI
       - name: create PR with release info
