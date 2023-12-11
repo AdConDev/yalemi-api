@@ -1,4 +1,4 @@
-''' OAuth2 scheme for authentication '''
+''' Responsible for handling OAuth2 authentication '''
 
 from typing import Annotated
 from datetime import datetime as dt, timedelta
@@ -8,11 +8,7 @@ from sqlmodel import Session, select
 from jose import jwt, JWTError
 from app import utils, database as db
 from app.models import User, TokenData
-
-
-SECRET_KEY = "c20429beb3a9aee9430444de3a4535e674a05eaa1101707e56644fb293590a54"
-ALGORITHM = "HS256"
-EXPIRE_MINUTES = 60
+from app.config import env
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -27,16 +23,18 @@ def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: Annotated[Session, Depends(db.get_session)]
 ):
-    ''' Get current user from token '''
+    ''' Get current user from token and validates credentials '''
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # It decodes the token to get the username and email. If the username
+        # or email is not found in the token, it raises an exception.
+        payload = jwt.decode(token, env.secret_key, algorithms=[env.algorithm])
         username = payload.get("username")
         email = payload.get("email")
-        if not username or not email:
-            raise credentials_exception
         token_data = TokenData(username=username, email=email)
     except JWTError as exc:
         raise credentials_exception from exc
+    # If the user is not found, it raises an exception. If the user is found,
+    # it returns the user.
     user_in_db = session.exec(
             select(User).where(User.username == token_data.username)).first()
     if not user_in_db:
@@ -48,6 +46,7 @@ def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)]
 ):
     ''' Get current user if active '''
+    # It checks if the user is active.
     if not current_user.enabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
@@ -55,14 +54,17 @@ def get_current_active_user(
 
 def create_access_token(data: dict, expire_delta: timedelta | None = None):
     ''' Create access token with expiration time '''
+    # It creates a JWT token with the given data and expiration time.
     to_encode = data.copy()
     if expire_delta:
         expire = dt.timestamp(dt.utcnow() + expire_delta)
     else:
         expire = dt.timestamp(
-            dt.now() + timedelta(minutes=EXPIRE_MINUTES))
+            dt.now() + timedelta(minutes=env.expire_minutes))
     to_encode.update({'exp': expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, ALGORITHM)
+    # The token is encoded with the secret key and algorithm from the
+    # environment variables.
+    encoded_jwt = jwt.encode(to_encode, env.secret_key, env.algorithm)
     return encoded_jwt
 
 
@@ -71,10 +73,13 @@ def authenticate_user(
     credentials: OAuth2PasswordRequestForm
 ):
     ''' User authentication '''
+    # It checks if the user exists and if the password from the credentials
+    # matches the password of the user.
     if not user_in_db:
         return False
     pwd_match = utils.verify_password(
         credentials.password, user_in_db.password)
     if not pwd_match:
         return False
+    # If the user exists and the passwords match, it returns the user.
     return user_in_db
