@@ -13,11 +13,11 @@ class EnvSettings(BaseSettings):
     port: str | None = None
     name: str | None = None
     # Secret key for the JWT token generation
-    secret_key: str | None = None
+    secret_key: str = ''
     # Algorithm for the JWT token generation
-    algorithm: str | None = None
+    algorithm: str = ''
     # Expiration time of the JWT token
-    expire_minutes: int | None = None
+    expire_minutes: int = 0
 
     class Config:
         ''' Specifies how environment variables should be read '''
