@@ -39,12 +39,12 @@ def post_one_may(
         raise unauth_exception
     # It creates a new May with the data from create_may and the user_id of
     # current_user
-    new_may = May(user_id=current_user.id, **create_may.dict())
-    created_may = May.from_orm(new_may)
-    session.add(created_may)
+    new_may = May.model_validate(create_may, from_attributes=True)
+    new_may.user_id = current_user.id
+    session.add(new_may)
     session.commit()
-    session.refresh(created_may)
-    return created_may
+    session.refresh(new_may)
+    return new_may
 
 
 @router.get("/all/", response_model=list[MayRead])
@@ -168,7 +168,7 @@ def put_may(
     if edited_may.user_id != current_user.id:
         raise forb_exception
     # It updates the May with the data from may_update and returns it.
-    new_may = may_update.dict(exclude_unset=True)
+    new_may = may_update.model_dump(exclude_unset=True)
     for key, value in new_may.items():
         setattr(edited_may, key, value)
     session.add(edited_may)

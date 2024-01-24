@@ -1,6 +1,6 @@
 ''' Responsible for handling OAuth2 authentication '''
 
-from typing import Annotated
+from typing import Annotated, Optional
 from datetime import datetime as dt, timedelta
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -69,7 +69,7 @@ def create_access_token(data: dict, expire_delta: timedelta | None = None):
 
 
 def authenticate_user(
-    user_in_db: User | None,
+    user_in_db: Optional[User],
     credentials: OAuth2PasswordRequestForm
 ):
     ''' User authentication '''

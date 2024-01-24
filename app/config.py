@@ -1,6 +1,6 @@
 ''' Responsible for managing the environment settings of application '''
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class EnvSettings(BaseSettings):
