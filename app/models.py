@@ -1,4 +1,4 @@
-''' Defines the data models for application using SQLModel '''
+''' Defines the data models for application and data base using SQLModel '''
 # May stands for a kind of post in the application
 from datetime import datetime
 from typing import List, Optional
