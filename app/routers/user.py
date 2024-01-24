@@ -49,7 +49,9 @@ def post_one_user(
     # Hashes the password, creates a new user, and adds it to the database.
     pwd_hash = utils.get_password_hash(new_user.password)
     new_user.password = pwd_hash
-    created_user = User.from_orm(new_user)
+    created_user = User.model_validate(
+        new_user, from_attributes=True
+        )
     session.add(created_user)
     session.commit()
     session.refresh(created_user)

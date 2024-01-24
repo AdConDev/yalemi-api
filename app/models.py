@@ -1,37 +1,40 @@
 ''' Defines the data models for application using SQLModel '''
 # May stands for a kind of post in the application
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from pydantic import EmailStr
 from sqlmodel import (
-    Field, SQLModel, Column, Boolean, TIMESTAMP, text, Relationship
+    Field, SQLModel, Column, Boolean, TIMESTAMP, text, Relationship, AutoString
     )
 
 
 class UserCreate(SQLModel):
     ''' Represents the data needed to create a new user '''
-    nickname: str | None = Field(max_length=25, nullable=True)
+    nickname: str = Field(max_length=25, nullable=False)
     username: str = Field(
         max_length=15, nullable=False, unique=True, index=True
         )
-    email: EmailStr = Field(nullable=False, unique=True)
+    email: EmailStr = Field(nullable=False, unique=True, sa_type=AutoString)
     password: str = Field(max_length=64, nullable=False)
 
 
 class User(UserCreate, table=True):
     ''' Extends UserCreate and represents a user in the database '''
-    id: int | None = Field(default=None, primary_key=True)
-    created_at: datetime = Field(
+    id: int = Field(primary_key=True, nullable=False, default=None)
+    created_at: Optional[datetime] = Field(
         sa_column=Column(
             TIMESTAMP(timezone=True),
             nullable=False,
-            server_default=text('NOW()')),
-        default=None)
-    enabled: bool | None = Field(
+            server_default=text('NOW()')
+            ),
+        default=None
+        )
+    enabled: Optional[bool] = Field(
         sa_column=Column(
             Boolean(create_constraint=True),
             server_default='TRUE', nullable=False
         ),
+        default=None
     )
     mayz: List['May'] = Relationship(
         back_populates="user",
@@ -65,26 +68,27 @@ class UserRead(UserMay):
 
 class MayCreate(SQLModel):
     ''' Represents the data needed to create a new May '''
-    title: str = Field(max_length=30, index=True, nullable=False)
+    title: str = Field(max_length=30, nullable=False)
     content: str = Field(max_length=150, nullable=False)
 
 
 class May(MayCreate, table=True):
     ''' Extends MayCreate and represents a May in the database '''
-    id: int | None = Field(default=None, primary_key=True)
-    created_at: datetime | None = Field(
+    id: Optional[int] = Field(primary_key=True, nullable=False, default=None)
+    created_at: Optional[datetime] = Field(
         sa_column=Column(
             TIMESTAMP(timezone=True),
             nullable=False,
             server_default=text('NOW()')
             ),
-        default=None)
-    likes: int | None = Field(default=0)
-    user_id: int | None = Field(
-        nullable=False,
-        foreign_key='user.id',
+        default=None
         )
-    user: User | None = Relationship(back_populates="mayz")
+    likes: int = Field(default=0)
+    user_id: Optional[int] = Field(
+        foreign_key='user.id',
+        default=None
+        )
+    user: User = Relationship(back_populates="mayz")
 
 
 class MayUser(SQLModel):
@@ -104,7 +108,7 @@ class MayRead(MayUser):
     ''' Extends MayUser and represents the data returned when reading a May '''
     created_at: datetime | None = None
     likes: int | None = None
-    user: UserMay | None = None
+    user: Optional[UserMay] = None
 
 
 class Token(SQLModel):
@@ -121,5 +125,5 @@ class TokenData(SQLModel):
 
 # Update forward references, which is necessary because of the circular
 # references between the User and May classes.
-UserRead.update_forward_refs()
-MayRead.update_forward_refs()
+UserRead.model_rebuild()
+MayRead.model_rebuild()
