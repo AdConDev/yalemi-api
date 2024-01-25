@@ -3,7 +3,7 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlmodel import Session, select
+from sqlmodel import Session, select, col
 from app.models import User, Token, UserRead
 from app import oauth2, database as db
 
@@ -31,7 +31,7 @@ def login_for_access_token(
             )
     # Get user
     user = session.exec(
-        select(User).where(User.username == form_data.username)
+        select(User).where(col(User.username) == form_data.username)
         ).first()
     # Authenticate user
     user_auth = oauth2.authenticate_user(user, form_data)

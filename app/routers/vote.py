@@ -2,7 +2,7 @@
 
 from typing import Annotated, Optional
 from fastapi import APIRouter, HTTPException, status, Depends
-from sqlmodel import Session, select
+from sqlmodel import Session, select, col
 from app.models import User, Vote, VoteCreate, VoteRead, May
 from app import oauth2, database as db
 
@@ -51,8 +51,8 @@ def post_vote(
     # database
     vote_in_db: Optional[Vote] = session.exec(
             select(Vote).where(
-                Vote.user_id == current_user.id and
-                Vote.may_id == may_id
+                col(Vote.user_id) == current_user.id,
+                col(Vote.may_id) == may_id
                 )).first()
     # If exists and user tries to put the same vote, it raises an exception
     if vote_in_db:
@@ -112,7 +112,7 @@ def delete_vote(
     # It gets the Vote with the may id and current user id
     deleted_vote: Optional[Vote] = session.exec(
         select(Vote).where(
-            (Vote.user_id == current_user.id) & (Vote.may_id == may_id)
+            Vote.user_id == current_user.id, Vote.may_id == may_id
             )
         ).first()
     # If there is no Vote with that may_id/user_id, it raises an exception

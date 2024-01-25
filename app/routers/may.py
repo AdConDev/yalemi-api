@@ -3,7 +3,7 @@
 
 from typing import Annotated
 from fastapi import APIRouter, status, HTTPException, Depends
-from sqlmodel import Session, select, column
+from sqlmodel import Session, select, column, col, desc
 from app.models import May, MayCreate, MayRead, MayUpdate, User
 from app import oauth2, database as db
 
@@ -89,7 +89,7 @@ def get_my_mayz(
     # It gets all Mays where the user_id is the id of current_user and returns
     # them.
     all_mayz = session.exec(
-        select(May).where(May.user_id == current_user.id)
+        select(May).where(col(May.user_id) == current_user.id)
         ).all()
     if not all_mayz:
         raise HTTPException(
@@ -111,7 +111,7 @@ def get_latest_may(
         raise unauth_exception
     # It gets the latest May by created_at and returns it.
     latest_may = session.exec(
-        select(May).order_by(May.created_at.desc())  # type: ignore
+        select(May).order_by(desc(May.created_at))
         ).first()
     # If there are no Mays, it raises an exception
     if not latest_may:

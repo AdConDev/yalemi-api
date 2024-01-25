@@ -3,7 +3,7 @@
 
 from typing import Annotated
 from fastapi import APIRouter, status, HTTPException, Depends
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_, col, desc
 from app.models import User, UserCreate, UserRead, UserUpdate
 from app import utils, oauth2, database as db
 
@@ -37,8 +37,9 @@ def post_user(
     # database
     user_in_db = session.exec(
             select(User).where(
-                User.username == new_user.username or
-                User.email == new_user.email
+                or_(
+                    col(User.username) == new_user.username,
+                    col(User.email) == new_user.email)
                 )).first()
     # If exists, it raises an exception
     if user_in_db:
@@ -89,7 +90,7 @@ def get_latest_user(
         raise unauth_exception
     # It fetches the latest user from the database and returns it
     latest_user = session.exec(
-        select(User).order_by(User.created_at.desc())  # type: ignore
+        select(User).order_by(desc(User.created_at))
         ).first()
     if not latest_user:
         raise HTTPException(
@@ -139,7 +140,7 @@ def put_user(
     # database
     if user_update.username:
         username_exist = session.exec(
-            select(User).where(User.username == user_update.username)
+            select(User).where(col(User.username) == user_update.username)
             ).first()
         # If exists, it raises an exception
         if username_exist:
@@ -149,7 +150,7 @@ def put_user(
                 )
     if user_update.email:
         email_exist = session.exec(
-            select(User).where(User.email == user_update.email)
+            select(User).where(col(User.email) == user_update.email)
             ).first()
         # If exists, it raises an exception
         if email_exist:
@@ -163,7 +164,7 @@ def put_user(
         pwd_hash = utils.get_password_hash(user_update.password)
         user_update.password = pwd_hash
     edited_user = session.get(User, user_id)
-    new_user = user_update.dict(exclude_unset=True)
+    new_user = user_update.model_dump(exclude_unset=True)
     for key, value in new_user.items():
         setattr(edited_user, key, value)
     session.add(edited_user)
