@@ -1,9 +1,9 @@
-# 0.8.0 (2024-01-24)
+# 0.9.0 (2024-01-25)
 
 
 ### Features
 
-* :art: ([4aa1dbc](https://github.com/ConsDotPy/yalemi-api/commit/4aa1dbcc0bf84552af9f9739d1ca5b5b839909ad))
+* :sparkles: add enum type for votes and join table ([187d323](https://github.com/ConsDotPy/yalemi-api/commit/187d3233839885f50aaf8df134f1a33387961719))
 
 
 
