@@ -1,9 +1,9 @@
-# 0.9.0 (2024-01-25)
+## 0.9.1 (2024-01-25)
 
 
-### Features
+### Bug Fixes
 
-* :sparkles: add enum type for votes and join table ([187d323](https://github.com/ConsDotPy/yalemi-api/commit/187d3233839885f50aaf8df134f1a33387961719))
+* :bug: fix like types ([0b0c467](https://github.com/ConsDotPy/yalemi-api/commit/0b0c467f0e15b9e6cc4206221ba5e3800f7eafa4))
 
 
 
