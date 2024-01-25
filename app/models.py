@@ -2,19 +2,11 @@
 # May stands for a kind of post in the application
 from datetime import datetime
 from typing import List, Optional
-from enum import IntEnum
-from sqlalchemy_utils import ChoiceType
 from pydantic import EmailStr
 from sqlmodel import (
     Field, SQLModel, Column, Boolean, TIMESTAMP, text, Relationship,
-    AutoString, Integer
+    AutoString
     )
-
-
-class VoteType(IntEnum):
-    ''' Represents the type of vote '''
-    UP = 1
-    DOWN = -1
 
 
 class VoteCreate(SQLModel):
@@ -22,9 +14,12 @@ class VoteCreate(SQLModel):
     may_id: int = Field(
         foreign_key="may.id", primary_key=True, nullable=False
     )
-    vote_type: VoteType = Field(
-        sa_column=Column(ChoiceType(VoteType, impl=Integer()), nullable=False)
+    vote_type: bool = Field(
+        sa_column=Column(
+            Boolean(create_constraint=True),
+            nullable=False
         )
+    )
 
 
 class Vote(VoteCreate, table=True):
