@@ -27,7 +27,7 @@ router = APIRouter(
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=MayRead)
-def post_one_may(
+def post_may(
     *,
     create_may: MayCreate,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],

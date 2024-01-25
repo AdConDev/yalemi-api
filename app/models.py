@@ -11,22 +11,26 @@ from sqlmodel import (
 
 class VoteCreate(SQLModel):
     ''' Represents the data needed to create a new vote '''
-    may_id: int = Field(
-        foreign_key="may.id", primary_key=True, nullable=False
-    )
-    vote_type: bool = Field(
-        sa_column=Column(
-            Boolean(create_constraint=True),
-            nullable=False
+    vote_type: int = Field(
+        le=1, ge=-1, nullable=False, exclude=0
         )
-    )
 
 
 class Vote(VoteCreate, table=True):
     ''' Represents a like, composed by a user and a May'''
-    user_id: int = Field(
-        foreign_key="user.id", primary_key=True, nullable=False
+    user_id: Optional[int] = Field(
+        foreign_key="user.id", primary_key=True, nullable=False, default=None
     )
+    may_id: Optional[int] = Field(
+        foreign_key="may.id", primary_key=True, nullable=False, default=None
+    )
+
+
+class VoteRead(SQLModel):
+    ''' Represents the data returned when reading a vote '''
+    user_id: int | None = None
+    may_id: int | None = None
+    vote_type: int | None = None
 
 
 class UserCreate(SQLModel):

@@ -27,7 +27,7 @@ router = APIRouter(
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserRead)
-def post_one_user(
+def post_user(
     *,
     new_user: UserCreate,
     session: Session = Depends(db.get_session)
@@ -100,7 +100,7 @@ def get_latest_user(
 
 
 @router.get("/{user_id}/", response_model=UserRead)
-def get_one_user(
+def get_user(
     user_id: int,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)
@@ -124,7 +124,7 @@ def get_one_user(
     "/{user_id}/", status_code=status.HTTP_202_ACCEPTED,
     response_model=UserRead
 )
-def put_one_user(
+def put_user(
     user_id: int,
     user_update: UserUpdate,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
@@ -173,7 +173,7 @@ def put_one_user(
 
 
 @router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
-def delete_one_user(
+def delete_user(
     user_id: int,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],
     session: Session = Depends(db.get_session)

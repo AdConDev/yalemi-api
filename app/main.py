@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 # Import the FastAPI class from the fastapi package
 from fastapi import FastAPI
 # Import the routers
-from app.routers import user, may, auth
+from app.routers import user, may, auth, vote
 # Import the function to create the database
 from app.database import create_db
 
@@ -30,6 +30,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(user.router)
 app.include_router(may.router)
 app.include_router(auth.router)
+app.include_router(vote.router)
 
 
 # FastAPI's decorators allow FastAPI to automatically generate interactive API
