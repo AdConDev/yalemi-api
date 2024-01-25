@@ -2,9 +2,35 @@
 # May stands for a kind of post in the application
 from datetime import datetime
 from typing import List, Optional
+from enum import IntEnum
+from sqlalchemy_utils import ChoiceType
 from pydantic import EmailStr
 from sqlmodel import (
-    Field, SQLModel, Column, Boolean, TIMESTAMP, text, Relationship, AutoString
+    Field, SQLModel, Column, Boolean, TIMESTAMP, text, Relationship,
+    AutoString, Integer
+    )
+
+
+class VoteType(IntEnum):
+    ''' Represents the type of vote '''
+    UP = 1
+    DOWN = -1
+
+
+class VoteCreate(SQLModel):
+    ''' Represents the data needed to create a new vote '''
+    may_id: int = Field(
+        foreign_key="may.id", primary_key=True, nullable=False
+    )
+    vote_type: VoteType = Field(
+        sa_column=Column(ChoiceType(VoteType, impl=Integer()), nullable=False)
+        )
+
+
+class Vote(VoteCreate, table=True):
+    ''' Represents a like, composed by a user and a May'''
+    user_id: int = Field(
+        foreign_key="user.id", primary_key=True, nullable=False
     )
 
 
@@ -20,7 +46,7 @@ class UserCreate(SQLModel):
 
 class User(UserCreate, table=True):
     ''' Extends UserCreate and represents a user in the database '''
-    id: int = Field(primary_key=True, nullable=False, default=None)
+    id: Optional[int] = Field(primary_key=True, default=None)
     created_at: Optional[datetime] = Field(
         sa_column=Column(
             TIMESTAMP(timezone=True),
@@ -32,7 +58,8 @@ class User(UserCreate, table=True):
     enabled: Optional[bool] = Field(
         sa_column=Column(
             Boolean(create_constraint=True),
-            server_default='TRUE', nullable=False
+            server_default='TRUE',
+            nullable=False
         ),
         default=None
     )
@@ -74,7 +101,7 @@ class MayCreate(SQLModel):
 
 class May(MayCreate, table=True):
     ''' Extends MayCreate and represents a May in the database '''
-    id: Optional[int] = Field(primary_key=True, nullable=False, default=None)
+    id: Optional[int] = Field(primary_key=True, default=None)
     created_at: Optional[datetime] = Field(
         sa_column=Column(
             TIMESTAMP(timezone=True),
@@ -83,10 +110,11 @@ class May(MayCreate, table=True):
             ),
         default=None
         )
-    likes: int = Field(default=0)
+    likes: Optional[int] = Field(default=0, nullable=False)
     user_id: Optional[int] = Field(
         foreign_key='user.id',
-        default=None
+        default=None,
+        nullable=False
         )
     user: User = Relationship(back_populates="mayz")
 
