@@ -112,7 +112,8 @@ def delete_vote(
     # It gets the Vote with the may id and current user id
     deleted_vote: Optional[Vote] = session.exec(
         select(Vote).where(
-            Vote.user_id == current_user.id, Vote.may_id == may_id
+            col(Vote.user_id) == current_user.id,
+            col(Vote.may_id) == may_id
             )
         ).first()
     # If there is no Vote with that may_id/user_id, it raises an exception
