@@ -24,13 +24,27 @@ class Vote(VoteCreate, table=True):
     may_id: Optional[int] = Field(
         foreign_key="may.id", primary_key=True, nullable=False, default=None
     )
+    user: 'User' = Relationship(back_populates="may_votes")
+    may: 'May' = Relationship(back_populates="user_votes")
 
 
 class VoteRead(SQLModel):
     ''' Represents the data returned when reading a vote '''
-    user_id: int | None = None
-    may_id: int | None = None
-    vote_type: int | None = None
+    user: Optional['UserRel']
+    may: Optional['MayRel']
+    vote_type: Optional[int]
+
+
+class VoteReadUsers(SQLModel):
+    ''' Represents the data returned when reading a vote '''
+    user: Optional['UserRel']
+    vote_type: Optional[int]
+
+
+class VoteReadMayz(SQLModel):
+    ''' Represents the data returned when reading a vote '''
+    may: Optional['MayRel']
+    vote_type: Optional[int]
 
 
 class UserCreate(SQLModel):
@@ -66,30 +80,32 @@ class User(UserCreate, table=True):
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all,delete,delete-orphan"}
         )
+    may_votes: List['Vote'] = Relationship(back_populates="user")
 
 
-class UserMay(SQLModel):
+class UserRel(SQLModel):
     ''' Represents a subset of the user data for May relationships '''
-    id: int | None = None
-    nickname: str | None = None
-    username: str | None = None
-    enabled: bool | None = None
+    id: Optional[int]
+    nickname: Optional[str]
+    username: Optional[str]
+    enabled: Optional[bool]
 
 
 class UserUpdate(SQLModel):
     ''' Represents the data needed to update an user '''
-    nickname: str | None = None
-    username: str | None = None
-    enabled: bool | None = None
-    email: EmailStr | None = None
-    password: str | None = None
+    nickname: Optional[str]
+    username: Optional[str]
+    enabled: Optional[bool]
+    email: Optional[EmailStr]
+    password: Optional[str]
 
 
-class UserRead(UserMay):
-    ''' Extends UserMay and represents the data returned when reading a
+class UserRead(UserRel):
+    ''' Extends UserRel and represents the data returned when reading a
     user '''
-    created_at: datetime | None = None
-    mayz: List['MayUser'] | None = None
+    created_at: Optional[datetime]
+    mayz: Optional[List['MayRel']]
+    may_votes: Optional[List['VoteReadMayz']]
 
 
 class MayCreate(SQLModel):
@@ -109,33 +125,33 @@ class May(MayCreate, table=True):
             ),
         default=None
         )
-    likes: Optional[int] = Field(default=0, nullable=False)
     user_id: Optional[int] = Field(
         foreign_key='user.id',
         default=None,
         nullable=False
         )
     user: User = Relationship(back_populates="mayz")
+    user_votes: List['Vote'] = Relationship(back_populates="may")
 
 
-class MayUser(SQLModel):
+class MayRel(SQLModel):
     ''' Represents a subset of the May data for User relationships '''
-    id: int | None = None
-    title: str | None = None
-    content: str | None = None
+    id: Optional[int]
+    title: Optional[str]
+    content: Optional[str]
 
 
 class MayUpdate(SQLModel):
     ''' Represents the data needed to update a May '''
-    title: str | None = None
-    content: str | None = None
+    title: Optional[str]
+    content: Optional[str]
 
 
-class MayRead(MayUser):
-    ''' Extends MayUser and represents the data returned when reading a May '''
-    created_at: datetime | None = None
-    likes: int | None = None
-    user: Optional[UserMay] = None
+class MayRead(MayRel):
+    ''' Extends MayRel and represents the data returned when reading a May '''
+    created_at: Optional[datetime]
+    user: Optional[UserRel]
+    user_votes: Optional[List['VoteReadUsers']]
 
 
 class Token(SQLModel):
@@ -146,11 +162,12 @@ class Token(SQLModel):
 
 class TokenData(SQLModel):
     ''' Represents the data in a token '''
-    username: str | None
-    email: str | None
+    username: Optional[str]
+    email: Optional[str]
 
 
 # Update forward references, which is necessary because of the circular
 # references between the User and May classes.
 UserRead.model_rebuild()
 MayRead.model_rebuild()
+VoteRead.model_rebuild()
