@@ -1,9 +1,9 @@
-# 0.11.0 (2024-01-29)
+## 0.11.1 (2024-02-03)
 
 
-### Features
+### Bug Fixes
 
-* :sparkles: Add relationships and update data models ([a6d1ec1](https://github.com/ConsDotPy/yalemi-api/commit/a6d1ec105d9a48aa207804be791e9cdb2318e3e5))
+* :art: build ([ee767e4](https://github.com/ConsDotPy/yalemi-api/commit/ee767e479e9a06ca762b3e8857d5ff671ddd65b6))
 
 
 
