@@ -1,7 +1,9 @@
 ''' Responsible for handling OAuth2 authentication '''
 
+
 from typing import Annotated, Optional
 from datetime import datetime as dt, timedelta
+from datetime import timezone
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session, select
@@ -35,11 +37,11 @@ def get_current_user(
         raise credentials_exception from exc
     # If the user is not found, it raises an exception. If the user is found,
     # it returns the user.
-    user_in_db = session.exec(
-            select(User).where(User.username == token_data.username)).first()
-    if not user_in_db:
-        raise credentials_exception
-    return user_in_db
+    if user_in_db := session.exec(
+            select(User).where(User.username == token_data.username)
+    ).first():
+        return user_in_db
+    raise credentials_exception
 
 
 def get_current_active_user(
@@ -57,15 +59,15 @@ def create_access_token(data: dict, expire_delta: timedelta | None = None):
     # It creates a JWT token with the given data and expiration time.
     to_encode = data.copy()
     if expire_delta:
-        expire = dt.timestamp(dt.utcnow() + expire_delta)
+        expire = dt.timestamp(dt.now(timezone.utc) + expire_delta)
     else:
         expire = dt.timestamp(
             dt.now() + timedelta(minutes=env.expire_minutes))
-    to_encode.update({'exp': expire})
+    to_encode['exp'] = expire
     # The token is encoded with the secret key and algorithm from the
     # environment variables.
-    encoded_jwt = jwt.encode(to_encode, env.secret_key, env.algorithm)
-    return encoded_jwt
+
+    return jwt.encode(to_encode, env.secret_key, env.algorithm)
 
 
 def authenticate_user(
@@ -79,7 +81,5 @@ def authenticate_user(
         return False
     pwd_match = utils.verify_password(
         credentials.password, user_in_db.password)
-    if not pwd_match:
-        return False
     # If the user exists and the passwords match, it returns the user.
-    return user_in_db
+    return user_in_db if pwd_match else False

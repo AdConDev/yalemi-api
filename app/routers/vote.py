@@ -49,13 +49,13 @@ def post_vote(
             )
     # Checks if a vote with the same username and may already exists in the
     # database
-    vote_in_db: Optional[Vote] = session.exec(
+    if vote_in_db := session.exec(
             select(Vote).where(
                 col(Vote.user_id) == current_user.id,
                 col(Vote.may_id) == may_id
-                )).first()
-    # If exists and user tries to put the same vote, it raises an exception
-    if vote_in_db:
+            )
+    ).first():
+        # If exists and user tries to put the same vote, it raises an exception
         if vote_in_db.vote_type == create_vote.vote_type:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -89,14 +89,13 @@ def get_all_votes(
     if not current_user:
         raise unauth_exception
     # It gets all Votes
-    all_votes = session.exec(select(Vote)).all()
+    if all_votes := session.exec(select(Vote)).all():
+        return all_votes
     # If there are no Votes, it raises an exception
-    if not all_votes:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No Votes yet"
-            )
-    return all_votes
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Votes yet"
+        )
 
 
 @router.delete("/{may_id}", status_code=status.HTTP_204_NO_CONTENT)

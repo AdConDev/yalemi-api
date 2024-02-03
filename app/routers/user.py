@@ -35,14 +35,13 @@ def post_user(
     ''' Route used to create a new user '''
     # Checks if a user with the same username or email already exists in the
     # database
-    user_in_db = session.exec(
-            select(User).where(
-                or_(
+    if session.exec(
+            select(User).where(or_(
                     col(User.username) == new_user.username,
-                    col(User.email) == new_user.email)
-                )).first()
-    # If exists, it raises an exception
-    if user_in_db:
+                    col(User.email) == new_user.email
+            ))
+    ).first():
+        # If exists, it raises an exception
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username/email already exists"
@@ -70,13 +69,12 @@ def get_all_users(
     if not current_user:
         raise unauth_exception
     # It fetches all users from the database and returns them
-    all_users = session.exec(select(User)).all()
+    if all_users := session.exec(select(User)).all():
+        return all_users
     # If there are no users, it raises an exception
-    if not all_users:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No Users yet")
-    return all_users
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Users yet")
 
 
 @router.get("/latest/", response_model=UserRead)
@@ -89,15 +87,14 @@ def get_latest_user(
     if not current_user:
         raise unauth_exception
     # It fetches the latest user from the database and returns it
-    latest_user = session.exec(
+    if latest_user := session.exec(
         select(User).order_by(desc(User.created_at))
-        ).first()
-    if not latest_user:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No Users yet"
-        )
-    return latest_user
+    ).first():
+        return latest_user
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Users yet"
+    )
 
 
 @router.get("/{user_id}/", response_model=UserRead)
@@ -111,14 +108,13 @@ def get_user(
     if not current_user:
         raise unauth_exception
     # It fetches the user with the given ID from the database and returns it
-    one_user = session.get(User, user_id)
+    if one_user := session.get(User, user_id):
+        return one_user
     # If there is no user with the given ID, it raises an exception
-    if not one_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No User with ID {user_id} found"
-        )
-    return one_user
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"No User with ID {user_id} found"
+    )
 
 
 @router.put(
@@ -138,26 +134,21 @@ def put_user(
         raise forb_exception
     # Checks if a user with the same username or email already exists in the
     # database
-    if user_update.username:
-        username_exist = session.exec(
-            select(User).where(col(User.username) == user_update.username)
-            ).first()
-        # If exists, it raises an exception
-        if username_exist:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already exists"
-                )
-    if user_update.email:
-        email_exist = session.exec(
+    if user_update.username and session.exec(
+                select(User).where(col(User.username) == user_update.username)
+    ).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already exists"
+            )
+    if user_update.email and session.exec(
             select(User).where(col(User.email) == user_update.email)
-            ).first()
+    ).first():
         # If exists, it raises an exception
-        if email_exist:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already exists"
-                )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already exists"
+            )
     # If not, it hashes the new password (if provided), updates the user's
     # details, and saves the changes to the database
     if user_update.password:

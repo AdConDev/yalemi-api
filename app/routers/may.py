@@ -1,4 +1,3 @@
-# pylint: disable=E1101
 ''' Defines the routes for May-related operations in the application. '''
 
 from typing import Annotated
@@ -62,18 +61,17 @@ def get_all_mayz(
         raise unauth_exception
     # It gets all Mays that match the search string, skips the first skip Mays,
     # limits the result to limit Mays, and returns them.
-    all_mayz = session.exec(
+    if all_mayz := session.exec(
         select(May).where(
             column('title').regexp_match(search, 'i')
-            ).offset(skip).limit(limit)
-        ).all()
+        ).offset(skip).limit(limit)
+    ).all():
+        return all_mayz
     # If there are no Mays, it raises an exception
-    if not all_mayz:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No Mayz yet"
-            )
-    return all_mayz
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Mayz yet"
+        )
 
 
 @router.get("/me/", response_model=list[MayRead])
@@ -88,15 +86,14 @@ def get_my_mayz(
         raise unauth_exception
     # It gets all Mays where the user_id is the id of current_user and returns
     # them.
-    all_mayz = session.exec(
+    if all_mayz := session.exec(
         select(May).where(col(May.user_id) == current_user.id)
-        ).all()
-    if not all_mayz:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No Mayz yet"
-            )
-    return all_mayz
+    ).all():
+        return all_mayz
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Mayz yet"
+        )
 
 
 @router.get("/latest/", response_model=MayRead)
@@ -110,16 +107,15 @@ def get_latest_may(
     if not current_user:
         raise unauth_exception
     # It gets the latest May by created_at and returns it.
-    latest_may = session.exec(
+    if latest_may := session.exec(
         select(May).order_by(desc(May.created_at))
-        ).first()
+    ).first():
+        return latest_may
     # If there are no Mays, it raises an exception
-    if not latest_may:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No Mayz yet"
-            )
-    return latest_may
+    raise HTTPException(
+        status_code=status.HTTP_204_NO_CONTENT,
+        detail="No Mayz yet"
+        )
 
 
 @router.get("/{may_id}/", response_model=MayRead)
@@ -133,14 +129,13 @@ def get_may(
     if not current_user:
         raise unauth_exception
     # It gets the May with the id may_id and returns it.
-    one_may = session.get(May, may_id)
+    if one_may := session.get(May, may_id):
+        return one_may
     # If there is no May with that id, it raises an exception
-    if not one_may:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No May with ID {may_id} found"
-            )
-    return one_may
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"No May with ID {may_id} found"
+        )
 
 
 @router.put(

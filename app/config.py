@@ -28,7 +28,7 @@ class EnvSettings(BaseSettings):
         ''' Returns the database URL '''
         auth = f'{self.dbms}://{self.username}:{self.password}'
         url = f'{self.hostname}:{self.port}/{self.name}'
-        return auth + '@' + url
+        return f'{auth}@{url}'
 
 
 # It's created when the module is imported and automatically reads the
