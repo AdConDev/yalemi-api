@@ -1,30 +1,21 @@
 {
-    "cSpell.words": [
-        "adcon",
-        "CTYPE",
-        "mayz",
-        "nextval",
-        "pkey",
-        "psycopg",
-        "Pydantic",
-        "Pytest",
-        "regclass",
-        "sqlmodel",
-        "unauth",
-        "uvicorn",
-        "yalemi"
-    ],
-    "sqltools.connections": [
-        {
-            "previewLimit": 50,
-            "server": "localhost",
-            "port": 5432,
-            "driver": "PostgreSQL",
-            "name": "Yalemi Dev",
-            "group": "Yalemi Project",
-            "database": "yalemi-dev",
-            "username": "adcon"
-        }
-    ],
-    "python.analysis.typeCheckingMode": "basic"
+  "cSpell.words": [
+    "adcon",
+    "CTYPE",
+    "fastapi",
+    "mayz",
+    "nextval",
+    "passlib",
+    "pkey",
+    "psycopg",
+    "Pydantic",
+    "Pytest",
+    "regclass",
+    "sqlmodel",
+    "unauth",
+    "uvicorn",
+    "yalemi"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true
 }
