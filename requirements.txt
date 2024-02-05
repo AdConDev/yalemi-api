@@ -10,7 +10,7 @@ DateTime==5.4
 dnspython==2.5.0
 ecdsa==0.18.0
 email-validator==2.1.0.post1
-fastapi==0.109.0
+fastapi==0.109.1
 greenlet==3.0.3
 h11==0.14.0
 httpcore==1.0.2
