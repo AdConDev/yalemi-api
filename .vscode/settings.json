@@ -11,6 +11,8 @@
     "Pydantic",
     "Pytest",
     "regclass",
+    "sessionmaker",
+    "sqlalchemy",
     "sqlmodel",
     "unauth",
     "uvicorn",
