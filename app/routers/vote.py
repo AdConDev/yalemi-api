@@ -78,7 +78,7 @@ def post_vote(
     return new_vote
 
 
-@router.get("/", response_model=list[VoteRead])
+@router.get("/all", response_model=list[VoteRead])
 def get_all_votes(
     *,
     current_user: Annotated[User, Depends(oauth2.get_current_active_user)],

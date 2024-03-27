@@ -73,7 +73,7 @@ def create_access_token(data: dict, expire_delta: timedelta | None = None):
 def authenticate_user(
     user_in_db: Optional[User],
     credentials: OAuth2PasswordRequestForm
-):
+) -> bool | User:
     ''' User authentication '''
     # It checks if the user exists and if the password from the credentials
     # matches the password of the user.

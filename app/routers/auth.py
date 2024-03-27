@@ -35,14 +35,17 @@ def login_for_access_token(
     ).first()
     # Authenticate user
     user_auth = oauth2.authenticate_user(user, form_data)
-    if not user_auth:
+    if not user_auth or not isinstance(user_auth, User):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
     # Create access token
     access_token = oauth2.create_access_token(
-        data={"username": user_auth.username, "email": user_auth.email}
+        data={
+            "username": user_auth.username if isinstance(
+                user_auth, User) else '',
+            "email": getattr(user_auth, 'email', '')}
     )
     # It returns a dictionary with the access token and the token type.
     return {"access_token": access_token, "token_type": "bearer"}
