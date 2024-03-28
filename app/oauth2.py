@@ -10,9 +10,8 @@ from sqlmodel import Session, select
 from jose import jwt, JWTError
 from app import utils, database as db
 from app.models import User, TokenData
-from app.config import EnvSettings
+from app.config import env
 
-env = EnvSettings()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 credentials_exception = HTTPException(

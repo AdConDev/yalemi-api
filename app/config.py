@@ -11,7 +11,7 @@ class EnvSettings(BaseSettings):
     password: str | None = None
     hostname: str | None = None
     port: str | None = None
-    name: str | None = None
+    database: str | None = None
     # Secret key for the JWT token generation
     secret_key: str = ''
     # Algorithm for the JWT token generation
@@ -27,5 +27,8 @@ class EnvSettings(BaseSettings):
     def database_url(self) -> str:
         ''' Returns the database URL '''
         auth = f'{self.dbms}://{self.username}:{self.password}'
-        url = f'{self.hostname}:{self.port}/{self.name}'
+        url = f'{self.hostname}:{self.port}/{self.database}'
         return f'{auth}@{url}'
+
+
+env = EnvSettings()

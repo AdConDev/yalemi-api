@@ -19,7 +19,6 @@ async def lifespan(api: FastAPI):
     # Startup event
     print("Starting up...")
     print(api)
-    create_db()
     yield
     # Shutdown event
     print("Shutting down...")

@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "adcon",
+    "asyncpg",
     "CTYPE",
     "fastapi",
     "mayz",
@@ -11,6 +12,7 @@
     "Pydantic",
     "Pytest",
     "regclass",
+    "repr",
     "sessionmaker",
     "sqlalchemy",
     "sqlmodel",
